@@ -1,4 +1,5 @@
 #include "GRender.h"
+#include "dynamicShader.h"
 
 using namespace GRender;
 namespace fs = std::filesystem;
@@ -26,7 +27,7 @@ private:
 	quad::Specs specs;
 	quad::Quad quad;
 
-	Shader shader;
+	DynamicShader shader;
 	Framebuffer fbuffer;
 	
 };

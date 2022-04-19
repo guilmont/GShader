@@ -7,17 +7,14 @@ uniform float iTime;
 uniform float iRatio;
 
 
-float DistLine(vec2 p, vec2 a, vec2 b)
-{
+float DistLine(vec2 p, vec2 a, vec2 b) {
     vec2 pa = p - a, ba = b - a;
 
     float t = clamp(dot(pa, ba)/dot(ba, ba), 0.0,1.0);
     return length(pa - ba*t);
 }
 
-
-float Line(vec2 p, vec2 a, vec2 b)
-{
+float Line(vec2 p, vec2 a, vec2 b) {
     float d = DistLine(p, a, b);
     float d2 = length(a-b);
     float m = smoothstep(0.03,0.01, d);
@@ -31,23 +28,17 @@ float N21(vec2 p) {
     return fract(p.x*p.y);
 }
 
-
-vec2 N22(vec2 p)
-{
+vec2 N22(vec2 p) {
     float n = N21(p);
     return vec2(n, N21(p+n));
 }
 
-vec2 GetPos(vec2 id, vec2 offset) 
-{
+vec2 GetPos(vec2 id, vec2 offset) {
     vec2 n = N22(id+offset) * iTime;
-
     return offset + 0.4*sin(n);
 }
 
-
-float Layer(vec2 uv)
-{
+float Layer(vec2 uv) {
     vec2 gv = fract(uv) - 0.5;
     vec2 id = floor(uv);
 
@@ -75,8 +66,7 @@ float Layer(vec2 uv)
     return m;
 }
 
-void main()
-{
+void main() {
     vec2 uv = 2.0*(fragCoord - 0.5) * vec2(iRatio, 1.0);
 
     float m = 0.0;
@@ -86,8 +76,7 @@ void main()
 
     uv *= 2.0*rot;
 
-   for (float i = 0.0; i <= 1.0; i+= 1.0/4.0)
-   {
+   for (float i = 0.0; i <= 1.0; i+= 1.0/4.0) {
         float z = fract(i + 0.15*iTime);
         float size = mix(10.0, 0.5, z);
 
@@ -96,9 +85,7 @@ void main()
         m+= Layer(size*uv + 20.0*i)*fade;
    }
    
-
     vec3 base = sin(vec3(0.345,0.456,0.675)*iTime)*0.3 + 0.6;
 
-    
     fragColor = vec4(m*base, 1.0);
-} // main
+}

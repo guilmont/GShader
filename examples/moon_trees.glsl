@@ -10,8 +10,7 @@ float rand21 (vec2 st) {
     return fract(sin(dot(st.xy, vec2(12.9898,78.233)))*43758.5453123);
 }
 
-float noise(vec2 uv)
-{
+float noise(vec2 uv) {
     uv += 0.5;
     vec2 id = floor(uv);
     vec2 loc = smoothstep(0.0,1.0,fract(uv));
@@ -29,8 +28,7 @@ float noise(vec2 uv)
     return mix(bb, tt, loc.y);
 }
 
-float perlin(vec2 uv, float nOctaves) 
-{
+float perlin(vec2 uv, float nOctaves) {
     float color = 0.0, norm = 0.0;   
     for (float k = 0.0; k < nOctaves; k++)
     {
@@ -42,8 +40,7 @@ float perlin(vec2 uv, float nOctaves)
     return color/norm;
 }
 
-float TaperBox(vec2 p, float wb, float wt, float yb, float yt, float blur)
-{
+float TaperBox(vec2 p, float wb, float wt, float yb, float yt, float blur) {
     float m = smoothstep(-blur, blur, p.y-yb)*smoothstep(blur, -blur, p.y - yt);
     float w = mix(wb, wt, (p.y - yb)/(yt-yb));
     m *= smoothstep(blur, -blur, abs(p.x) - w);  
@@ -51,8 +48,7 @@ float TaperBox(vec2 p, float wb, float wt, float yb, float yt, float blur)
     return m;
 }
 
-vec4 Tree(vec2 uv, float blur)
-{
+vec4 Tree(vec2 uv, float blur) {
     vec3 cor_trunk = vec3(120.0, 40.0, 31.0)/255.0,
          cor_canopy = vec3(30.0,132.0,73.0)/255.0;
 
@@ -73,10 +69,11 @@ vec4 Tree(vec2 uv, float blur)
     return vec4(color, max(trunk, canopy));
 }
 
-float calcHeight(float x) { return sin(0.423*x)+0.3*sin(x); }
+float calcHeight(float x) { 
+    return sin(0.423*x)+0.3*sin(x); 
+}
 
-vec4 Layer(vec2 uv, float blur)
-{
+vec4 Layer(vec2 uv, float blur) {
     // Adding some ground    
     float ground = smoothstep(blur, -blur, uv.y + calcHeight(uv.x));
     vec4 layer = vec4(0.95,0.95,1.0, ground);
@@ -96,8 +93,7 @@ vec4 Layer(vec2 uv, float blur)
     return  layer;
 }
 
-void main()
-{
+void main() {
     vec2 uv = (fragCoord - 0.5) * vec2(iRatio, 1.0f);
 
     // Clear background to black
@@ -136,4 +132,4 @@ void main()
     }
 
     fragColor.rgb *= vec3(0.9,0.9,1.0);
-} // main
+}

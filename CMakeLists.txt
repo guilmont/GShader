@@ -14,7 +14,11 @@ set(ASSETS_DIR "assets")
 add_subdirectory("vendor/GRender/GRender" GRender)
 
 project(GShader)
-add_executable(GShader "gshader.h" "gshader.cpp")
+add_executable(GShader 
+	"gshader.h"       "gshader.cpp"
+	"dynamicShader.h" "dynamicShader.cpp"
+)
+
 target_link_libraries(GShader PRIVATE GRender)
 target_compile_definitions(${PROJECT_NAME} PRIVATE ASSETS="../${ASSETS_DIR}")
 

@@ -5,6 +5,7 @@ GShader::GShader(void) : Application("GShader", 1200, 800, "layout.ini") {
 	specs.size = { 2.0f, 2.0f };
 
 	fbuffer = Framebuffer(1200, 800);
+	shader = DynamicShader(&mailbox);
 	loadShader();
 }
 
@@ -12,7 +13,7 @@ GShader::GShader(void) : Application("GShader", 1200, 800, "layout.ini") {
 void GShader::loadShader() {
 	elapsedTime = 0.0f;
 	modTime = fs::last_write_time(shaderPath);
-	shader = Shader("../assets/vtxShader.glsl", shaderPath);
+	shader.loadShader(shaderPath);
 }
 
 void GShader::onUserUpdate(float deltaTime) {
@@ -34,6 +35,9 @@ void GShader::onUserUpdate(float deltaTime) {
 
 	//////////////////////////////////////////////////////////
 	// Drawing to framebuffer
+
+	if (shader.hasFailed())
+		return;
 
 	glm::uvec2 res = fbuffer.getSize();
 	float aRatio = float(res.x) / float(res.y);
