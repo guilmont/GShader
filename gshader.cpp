@@ -39,6 +39,10 @@ void GShader::onUserUpdate(float deltaTime) {
 	if (shader.hasFailed())
 		return;
 
+	// Let's clean up messages
+	mailbox.clear();
+	mailbox.close();
+
 	glm::uvec2 res = fbuffer.getSize();
 	float aRatio = float(res.x) / float(res.y);
 
@@ -107,7 +111,7 @@ void GShader::ImGuiMenuLayer(void) {
 			view_specs = true;
 
 		if (ImGui::MenuItem("View mailbox"))
-			mailbox.setActive();
+			mailbox.open();
 		
 		ImGui::EndMenu();
 	}
