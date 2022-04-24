@@ -68,14 +68,19 @@ void DynamicShader::bind() {
     glUseProgram(programID);
 }
 
-void DynamicShader::setInteger(const std::string &name, int val) {
-    int32_t loc = glad_glGetUniformLocation(programID, name.c_str());
+void DynamicShader::setInteger(const char* name, int val) {
+    int32_t loc = glad_glGetUniformLocation(programID, name);
     glUniform1i(loc, val);
 }
 
-void DynamicShader::setFloat(const std::string &name, float val) {
-    int32_t loc = glad_glGetUniformLocation(programID, name.c_str());
+void DynamicShader::setFloat(const char* name, float val) {
+    int32_t loc = glad_glGetUniformLocation(programID, name);
     glUniform1f(loc, val);
+}
+
+void DynamicShader::setVec3f(const char* name, const float* v) {
+    int32_t loc = glad_glGetUniformLocation(programID, name);
+    glUniform3f(loc, v[0], v[1], v[2]);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

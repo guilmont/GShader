@@ -14,14 +14,18 @@ set(ASSETS_DIR "assets")
 add_subdirectory("vendor/GRender/GRender" GRender)
 
 project(GShader)
-add_executable(GShader 
+
+add_library(Colors STATIC "colors.h" "colors.cpp")
+target_link_libraries(Colors PRIVATE imgui glm)
+
+add_executable(GShader
 	"gshader.h"       "gshader.cpp"
 	"dynamicShader.h" "dynamicShader.cpp"
 )
 
-target_link_libraries(GShader PRIVATE GRender)
-target_compile_definitions(${PROJECT_NAME} PRIVATE ASSETS="../${ASSETS_DIR}")
+target_link_libraries(GShader PRIVATE GRender Colors)
+target_compile_definitions(GShader PRIVATE ASSETS="../${ASSETS_DIR}")
 
 if (WIN32)
-	set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")
+	set_target_properties(GShader PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")
 endif()

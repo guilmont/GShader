@@ -22,8 +22,10 @@ public:
     bool hasFailed(void);
     void bind(void);
 
-    void setInteger(const std::string&, int);
-    void setFloat(const std::string&, float);
+    void setInteger(const char*, int);
+    void setFloat(const char*, float);
+    void setVec3f(const char*, const float*);
+
 
 private:
     uint32_t createShader(const std::filesystem::path& shaderPath, GLenum shaderType);

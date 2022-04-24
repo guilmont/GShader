@@ -1,3 +1,7 @@
+// This code was inspired by the live coding session in "The Art of Code" Youtube channel
+// Part 1: https://www.youtube.com/watch?v=LLZPnh_LK8c
+// Part 2: https://www.youtube.com/watch?v=XaiYKkxvrFM
+
 #version 450 core
 
 in vec2 fragCoord;

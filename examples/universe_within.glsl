@@ -1,3 +1,7 @@
+// This code was made by following live coding session by "The Art of Code" Youtube channel
+// Part 1: https://www.youtube.com/watch?v=3CycKKJiwis
+// Part 2: https://www.youtube.com/watch?v=KGJUl8Teipk
+
 #version 450 core
 
 in vec2 fragCoord;
@@ -49,8 +53,7 @@ float Layer(vec2 uv) {
             p[i++] = GetPos(id, vec2(x, y));
 
     float m = 0.0;
-    for (int i = 0; i < 9; i++)
-    {
+    for (int i = 0; i < 9; i++) {
         m += Line(gv, p[4], p[i]);
 
         vec2 j = 20.0 * (p[i] - gv);
