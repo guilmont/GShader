@@ -10,7 +10,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_SOURCE_DIR}/bin")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/bin")
 
 set(GRENDER_IMPLOT OFF CACHE BOOL "Implot won't be used")
-set(ASSETS_DIR "assets")
 add_subdirectory("vendor/GRender/GRender" GRender)
 
 project(GShader)
@@ -24,7 +23,6 @@ add_executable(GShader
 )
 
 target_link_libraries(GShader PRIVATE GRender Colors)
-target_compile_definitions(GShader PRIVATE ASSETS="../${ASSETS_DIR}")
 
 if (WIN32)
 	set_target_properties(GShader PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")

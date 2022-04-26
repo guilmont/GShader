@@ -17,7 +17,7 @@ public:
 
 private:
 	float elapsedTime = 0.0f;
-	fs::path shaderPath = "../assets/basic.glsl";
+	fs::path shaderPath = "../examples/basic.glsl";
 	fs::file_time_type modTime;  // used to reload shader if if was modified
 	
 	void loadShader();

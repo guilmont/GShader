@@ -18,7 +18,6 @@ public:
     DynamicShader& operator=(DynamicShader&&) noexcept;
 
     void loadShader(const std::filesystem::path& frgPath);
-    bool isSuccessful(void);
     bool hasFailed(void);
     void bind(void);
 
@@ -28,7 +27,8 @@ public:
 
 
 private:
-    uint32_t createShader(const std::filesystem::path& shaderPath, GLenum shaderType);
+    uint32_t createShaderFromFile(const std::filesystem::path& shaderPath, GLenum shaderType);
+    uint32_t createShader(const std::string& shaderData, GLenum shaderType);
     void checkShader(uint32_t id, uint32_t flag);
     void checkProgram(uint32_t id, uint32_t flag);
 

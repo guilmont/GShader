@@ -10,9 +10,18 @@ namespace fs = std::filesystem;
 ///////////////////////////////////////////////////////////////////////////////
 
 DynamicShader::DynamicShader(GRender::Mailbox* mailbox) : mail(mailbox) {
-    fs::path vtxPath = fs::path{ ASSETS } / "vtxShader.glsl";
-    GRender::ASSERT(fs::exists(vtxPath), "Shader not found! => " + vtxPath.string());
-    vtxID = createShader(vtxPath, GL_VERTEX_SHADER); // this shader is well tested and should be fine
+    const std::string shader =
+        "#version 450 core                      \n"
+        "layout(location = 0) in vec3 vPos;     \n"
+        "layout(location = 2) in vec2 vTexCoord;\n"
+        "out vec2 fragCoord;                    \n"
+        "void main() {                          \n"
+        "    fragCoord = vTexCoord;             \n"
+        "    gl_Position = vec4(vPos, 1.0);     \n"
+        "}                                      \n";
+    
+    
+    vtxID = createShader(shader, GL_VERTEX_SHADER); // this shader is well tested and should be fine
 }
 
 DynamicShader::~DynamicShader(void) {
@@ -37,7 +46,7 @@ DynamicShader& DynamicShader::operator=(DynamicShader&& rhs) noexcept {
 void DynamicShader::loadShader(const fs::path& frgPath) {
     GRender::ASSERT(fs::exists(frgPath), "Shader not found! => " + frgPath.string());
 
-    uint32_t frg = createShader(frgPath, GL_FRAGMENT_SHADER);
+    uint32_t frg = createShaderFromFile(frgPath, GL_FRAGMENT_SHADER);
     
     if (hasFailed()) {  // no point to continue
         return;
@@ -54,10 +63,6 @@ void DynamicShader::loadShader(const fs::path& frgPath) {
     checkProgram(programID, GL_LINK_STATUS);
 
     glDeleteShader(frg);
-}
-
-bool DynamicShader::isSuccessful() {
-    return success;
 }
 
 bool DynamicShader::hasFailed() {
@@ -86,21 +91,23 @@ void DynamicShader::setVec3f(const char* name, const float* v) {
 /////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
 
-
-uint32_t DynamicShader::createShader(const fs::path& shaderPath, GLenum shaderType) {
+uint32_t DynamicShader::createShaderFromFile(const fs::path& shaderPath, GLenum shaderType) {
     // Importing file into stream
     std::ifstream arq(shaderPath);
     std::stringstream strData;
     strData << arq.rdbuf();
     arq.close();
 
+    return createShader(strData.str(), shaderType);
+}
+
+uint32_t DynamicShader::createShader(const std::string& shaderData, GLenum shaderType) {
     // Creating shader from data
     uint32_t shader = glCreateShader(shaderType);
     GRender::ASSERT(shader != 0, "Failed to create shader!");
 
-    std::string data = strData.str();
-    GLint length = (GLint) data.size();
-    const GLchar* ptr = data.c_str();
+    GLint length = (GLint) shaderData.size();
+    const GLchar* ptr = shaderData.c_str();
     glShaderSource(shader, 1, &ptr, &length);
     glCompileShader(shader);
 
