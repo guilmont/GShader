@@ -20,25 +20,27 @@ void GShader::loadShader() {
 void GShader::onUserUpdate(float deltaTime) {
 
 	bool ctrl = keyboard::isDown(GRender::Key::LEFT_CONTROL) || keyboard::isDown(GRender::Key::RIGHT_CONTROL);
+	bool shft = keyboard::isDown(GRender::Key::LEFT_SHIFT) || keyboard::isDown(GRender::Key::RIGHT_SHIFT);
 
 	if (ctrl && keyboard::isPressed('O')) {
 		auto function = [](const fs::path& path, void* ptr) -> void { *reinterpret_cast<fs::path*>(ptr) = path; };
 		dialog.openFile("Open shader...", { "glsl" }, function, &shaderPath);
 	}
 
-	if (ctrl && keyboard::isPressed('S'))
+	if (shft && keyboard::isPressed('S'))
 		view_specs = true;
 
-	if (ctrl && keyboard::isPressed('C')) {
+	if (shft && keyboard::isPressed('C')) {
 		colors.open();
 	}
 
-	if (ctrl && keyboard::isPressed('V')) {
+	if (shft && keyboard::isPressed('V')) {
 		camera.open();
 	}
 
 	// Automatic controls for camera
-	camera.controls(deltaTime);
+	if (fbuffer.active)
+		camera.controls(deltaTime);
 
 	// Update shader if it was modified
 	elapsedTime += deltaTime;
@@ -143,14 +145,14 @@ void GShader::ImGuiMenuLayer(void) {
 	}
 
 	if (ImGui::BeginMenu("Options")) {
-		if (ImGui::MenuItem("Specs...", "Ctrl+S"))
+		if (ImGui::MenuItem("Specs...", "Shift+S"))
 			view_specs = true;
 
-		if (ImGui::MenuItem("Colors...", "Ctrl+C")) {
+		if (ImGui::MenuItem("Colors...", "Shift+C")) {
 			colors.open();
 		}
 
-		if (ImGui::MenuItem("Camera...", "Ctrl+V")) {
+		if (ImGui::MenuItem("Camera...", "Shift+V")) {
 			camera.open();
 		}
 
