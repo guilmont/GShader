@@ -62,8 +62,9 @@ void GShader::onUserUpdate(float deltaTime) {
 	shader.setFloat("iRatio", aRatio);
 
 	shader.setVec3f("iCamPos", &camera.position()[0]);
-	shader.setFloat("iCamYaw", camera.yaw());
-	shader.setFloat("iCamPitch", camera.pitch());
+	shader.setFloat("iCamYaw", camera.getYaw());
+	shader.setFloat("iCamPitch", camera.getPitch());
+	shader.setFloat("iFOV", camera.fieldView());
 
 
 	float vec[2] = { 0.0f, 0.0f };
@@ -72,7 +73,7 @@ void GShader::onUserUpdate(float deltaTime) {
 		glm::uvec2 size = fbuffer->getSize();
 		glm::vec2 mpos = mouse::position();
 		vec[0] = (mpos.x - fpos.x) / float(size.x);
-		vec[1] = 1.0 - (mpos.y - fpos.y) / float(size.y);
+		vec[1] = 1.0f - (mpos.y - fpos.y) / float(size.y);
 	}
 	shader.setVec2f("iMouse", vec);
 

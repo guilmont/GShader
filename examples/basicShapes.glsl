@@ -9,6 +9,7 @@ uniform float iRatio;
 uniform vec3 iCamPos;
 uniform float iCamYaw;
 uniform float iCamPitch;
+uniform float iFOV;
 
 mat2 Rotate(float angle) {
     angle *= 0.01745329252; // deg to rad
@@ -144,9 +145,8 @@ void main() {
 
     // setup where we are and where we are looking
     vec3 rayOrg = iCamPos;
-    float FOV = 0.0174533 * 25.0;
-    float pitch = FOV*uv.y + iCamPitch;
-    float yaw = FOV*uv.x + iCamYaw;
+    float pitch = iFOV*uv.y + iCamPitch;
+    float yaw = iFOV*uv.x + iCamYaw;
 
     vec3 rayDir;
     rayDir.x = cos(yaw)*cos(pitch);
