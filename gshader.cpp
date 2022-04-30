@@ -33,6 +33,10 @@ void GShader::onUserUpdate(float deltaTime) {
 		colors.open();
 	}
 
+	if (ctrl && keyboard::isPressed('V')) {
+		camera.open();
+	}
+
 	// Automatic controls for camera
 	camera.controls(deltaTime);
 
@@ -146,7 +150,7 @@ void GShader::ImGuiMenuLayer(void) {
 			colors.open();
 		}
 
-		if (ImGui::MenuItem("Camera")) {
+		if (ImGui::MenuItem("Camera...", "Ctrl+V")) {
 			camera.open();
 		}
 
