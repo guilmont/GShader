@@ -53,12 +53,12 @@ void DynamicShader::loadShader(const fs::path& frgPath) {
     }
 
     // Create program
-    programID = glad_glCreateProgram();
+    programID = glCreateProgram();
     glAttachShader(programID, vtxID);
     glAttachShader(programID, frg);
 
     // Link shaders to program
-    glad_glLinkProgram(programID);
+    glLinkProgram(programID);
 
     checkProgram(programID, GL_LINK_STATUS);
 
@@ -74,17 +74,22 @@ void DynamicShader::bind() {
 }
 
 void DynamicShader::setInteger(const char* name, int val) {
-    int32_t loc = glad_glGetUniformLocation(programID, name);
+    int32_t loc = glGetUniformLocation(programID, name);
     glUniform1i(loc, val);
 }
 
 void DynamicShader::setFloat(const char* name, float val) {
-    int32_t loc = glad_glGetUniformLocation(programID, name);
+    int32_t loc = glGetUniformLocation(programID, name);
     glUniform1f(loc, val);
 }
 
+void DynamicShader::setVec2f(const char* name, const float* v) {
+    int32_t loc = glGetUniformLocation(programID, name);
+    glUniform2f(loc, v[0], v[1]);
+}
+
 void DynamicShader::setVec3f(const char* name, const float* v) {
-    int32_t loc = glad_glGetUniformLocation(programID, name);
+    int32_t loc = glGetUniformLocation(programID, name);
     glUniform3f(loc, v[0], v[1], v[2]);
 }
 

@@ -23,6 +23,7 @@ public:
 
     void setInteger(const char*, int);
     void setFloat(const char*, float);
+    void setVec2f(const char*, const float*);
     void setVec3f(const char*, const float*);
 
 

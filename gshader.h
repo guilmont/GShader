@@ -5,6 +5,17 @@
 using namespace GRender;
 namespace fs = std::filesystem;
 
+template <typename TP>
+class Ref {
+public:
+	bool active = false;
+	TP* operator->() { return &var; }
+	TP& operator*() { return var; }
+
+private:
+	TP var;
+};
+
 class GShader : public Application
 {
 public:
@@ -18,7 +29,7 @@ public:
 private:
 	float elapsedTime = 0.0f;
 	fs::path shaderPath = "../examples/basic.glsl";
-	fs::file_time_type modTime;  // used to reload shader if if was modified
+	fs::file_time_type modTime;  // used to reload shader if it was modified
 	
 	void loadShader();
 
@@ -29,8 +40,10 @@ private:
 	quad::Quad quad;
 
 	Colors colors;
+	Camera camera;
 	DynamicShader shader;
-	Framebuffer fbuffer;
+
+	Ref<Framebuffer> fbuffer;
 
 };
 

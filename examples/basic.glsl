@@ -4,9 +4,9 @@ in vec2 fragCoord;
 out vec4 fragColor;
 
 uniform float iTime;
+uniform vec2 iMouse;
 
 void main() {
 	float r = 0.5 + 0.5*sin(iTime);
-	float g = 0.5 + 0.5*cos(iTime);
-	fragColor = vec4(r, g, fragCoord.x*fragCoord.y, 1.0);
+	fragColor = vec4(r, fragCoord.x+iMouse.x, fragCoord.y+iMouse.y, 1.0);
 }

@@ -6,6 +6,10 @@ out vec4 fragColor;
 uniform float iTime;
 uniform float iRatio;
 
+uniform vec3 iCamPos;
+uniform float iCamYaw;
+uniform float iCamPitch;
+
 mat2 Rotate(float angle) {
     angle *= 0.01745329252; // deg to rad
     float cs = cos(angle);
@@ -139,9 +143,16 @@ void main() {
     vec2 uv = (2.0 * vec2(fragCoord.x, fragCoord.y) - 1.0) * vec2(iRatio, 1.0);
 
     // setup where we are and where we are looking
-    vec3 rayOrg = vec3(0.0, 10.0,-10.0);
-    vec3 rayDir = normalize(vec3(uv.x, uv.y, 1.0));
-    rayDir.yz *= Rotate(15.0);
+    vec3 rayOrg = iCamPos;
+    float FOV = 0.0174533 * 25.0;
+    float pitch = FOV*uv.y + iCamPitch;
+    float yaw = FOV*uv.x + iCamYaw;
+
+    vec3 rayDir;
+    rayDir.x = cos(yaw)*cos(pitch);
+    rayDir.y = sin(pitch);
+    rayDir.z = sin(yaw)*cos(pitch);
+
 
     Object obj = RayMarch(rayOrg, rayDir);
     vec3 pos = rayOrg + obj.dist * rayDir;
