@@ -31,7 +31,7 @@ private:
 	fs::path shaderPath = "../examples/basic.glsl";
 	fs::file_time_type modTime;  // used to reload shader if it was modified
 	
-	void loadShader();
+	void importShader();
 
 private:
 	bool view_specs = false;

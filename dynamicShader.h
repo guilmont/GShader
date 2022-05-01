@@ -1,14 +1,11 @@
 #pragma once
 
-#include <filesystem>
-
 #include "glad/glad.h"
 #include "mailbox.h"
 
 class DynamicShader {
 public:
     DynamicShader(void) = default;
-    DynamicShader(GRender::Mailbox* mailbox);
     ~DynamicShader(void);
 
     DynamicShader(const DynamicShader&) = delete;
@@ -17,6 +14,8 @@ public:
     DynamicShader(DynamicShader&&) noexcept;
     DynamicShader& operator=(DynamicShader&&) noexcept;
 
+
+    void initialize(void);
     void loadShader(const std::filesystem::path& frgPath);
     bool hasFailed(void);
     void bind(void);
@@ -39,10 +38,5 @@ private:
     uint32_t
         programID = 0,   // id used to bind shader
         vtxID = 0;       // vertex compilation id
-
-    GRender::Mailbox* mail = nullptr;
-
-
-   
 };
 

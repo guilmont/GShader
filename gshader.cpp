@@ -5,13 +5,14 @@ GShader::GShader(void) : Application("GShader", 1200, 800, "layout.ini") {
 	specs.size = { 2.0f, 2.0f };
 
 	*fbuffer = Framebuffer(1200, 800);
-	shader = DynamicShader(&mailbox);
-	loadShader();
+	shader.initialize();
+
+	importShader(); // starts default shader: basic.glsl
 }
 
 
-void GShader::loadShader() {
-	mailbox.clear();
+void GShader::importShader() {
+	mailbox::Clear();
 	elapsedTime = 0.0f;
 	modTime = fs::last_write_time(shaderPath);
 	shader.loadShader(shaderPath);
@@ -24,7 +25,7 @@ void GShader::onUserUpdate(float deltaTime) {
 
 	if (ctrl && keyboard::isPressed('O')) {
 		auto function = [](const fs::path& path, void* ptr) -> void { *reinterpret_cast<fs::path*>(ptr) = path; };
-		dialog.openFile("Open shader...", { "glsl" }, function, &shaderPath);
+		dialog::OpenFile("Open shader...", { "glsl" }, function, &shaderPath);
 	}
 
 	if (shft && keyboard::isPressed('S'))
@@ -45,7 +46,7 @@ void GShader::onUserUpdate(float deltaTime) {
 	// Update shader if it was modified
 	elapsedTime += deltaTime;
 	if (fs::last_write_time(shaderPath) != modTime)
-		loadShader();
+		importShader();
 
 	//////////////////////////////////////////////////////////
 	// Drawing to framebuffer
@@ -54,8 +55,8 @@ void GShader::onUserUpdate(float deltaTime) {
 		return;
 
 	// Let's clean up messages
-	mailbox.clear();
-	mailbox.close();
+	mailbox::Clear();
+	mailbox::Close();
 
 	glm::uvec2 res = fbuffer->getSize();
 	float aRatio = float(res.x) / float(res.y);
@@ -135,7 +136,7 @@ void GShader::ImGuiMenuLayer(void) {
 
 		if (ImGui::MenuItem("Open shader...", "Ctrl+O")) {
 			auto function = [](const fs::path& path, void* ptr) -> void { *reinterpret_cast<fs::path*>(ptr) = path; };
-			dialog.openFile("Open shader...", { "glsl" }, function, &shaderPath);
+			dialog::OpenFile("Open shader...", { "glsl" }, function, &shaderPath);
 		}
 
 		if (ImGui::MenuItem("Exit"))
@@ -156,9 +157,6 @@ void GShader::ImGuiMenuLayer(void) {
 			camera.open();
 		}
 
-		if (ImGui::MenuItem("View mailbox"))
-			mailbox.open();
-		
 		ImGui::EndMenu();
 	}
 }

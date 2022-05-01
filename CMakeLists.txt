@@ -17,13 +17,27 @@ project(GShader)
 add_library(Colors STATIC "colors.h" "colors.cpp")
 target_link_libraries(Colors PRIVATE imgui glm)
 
-add_executable(GShader
-	"gshader.h"       "gshader.cpp"
-	"dynamicShader.h" "dynamicShader.cpp"
-)
+add_library(DynamicShader STATIC "dynamicShader.h" "dynamicShader.cpp")
+target_link_libraries(DynamicShader PRIVATE GRender)
 
-target_link_libraries(GShader PRIVATE GRender Colors)
+add_executable(GShader "gshader.h" "gshader.cpp")
+target_link_libraries(GShader PRIVATE GRender Colors DynamicShader)
 
 if (WIN32)
 	set_target_properties(GShader PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")
 endif()
+
+install(TARGETS "GShader" 
+	CONFIGURATIONS Release
+		DESTINATION "${CMAKE_INSTALL_PREFIX}/bin"
+)
+
+install(DIRECTORY "examples" 
+	CONFIGURATIONS Release	
+		DESTINATION "${CMAKE_INSTALL_PREFIX}"
+)
+
+install(FILES "bin/layout.ini" 
+	CONFIGURATIONS Release	
+		DESTINATION "${CMAKE_INSTALL_PREFIX}/bin"
+)

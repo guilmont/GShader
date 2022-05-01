@@ -1,28 +1,10 @@
-#include <fstream>
-#include <sstream>
-
 #include "dynamicShader.h"
 
 namespace fs = std::filesystem;
 
-
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-DynamicShader::DynamicShader(GRender::Mailbox* mailbox) : mail(mailbox) {
-    const std::string shader =
-        "#version 450 core                      \n"
-        "layout(location = 0) in vec3 vPos;     \n"
-        "layout(location = 2) in vec2 vTexCoord;\n"
-        "out vec2 fragCoord;                    \n"
-        "void main() {                          \n"
-        "    fragCoord = vTexCoord;             \n"
-        "    gl_Position = vec4(vPos, 1.0);     \n"
-        "}                                      \n";
-    
-    
-    vtxID = createShader(shader, GL_VERTEX_SHADER); // this shader is well tested and should be fine
-}
 
 DynamicShader::~DynamicShader(void) {
     glDeleteShader(vtxID);
@@ -32,7 +14,6 @@ DynamicShader::~DynamicShader(void) {
 DynamicShader::DynamicShader(DynamicShader&& rhs) noexcept {
     std::swap(programID, rhs.programID);
     std::swap(vtxID, rhs.vtxID);
-    std::swap(mail, rhs.mail);
 }
 
 
@@ -43,7 +24,22 @@ DynamicShader& DynamicShader::operator=(DynamicShader&& rhs) noexcept {
     return *this;
 }
 
+void DynamicShader::initialize() {
+    const std::string shader =
+        "#version 450 core                      \n"
+        "layout(location = 0) in vec3 vPos;     \n"
+        "layout(location = 2) in vec2 vTexCoord;\n"
+        "out vec2 fragCoord;                    \n"
+        "void main() {                          \n"
+        "    fragCoord = vTexCoord;             \n"
+        "    gl_Position = vec4(vPos, 1.0);     \n"
+        "}                                      \n";
+
+    vtxID = createShader(shader, GL_VERTEX_SHADER); // this shader is well tested and should be fine
+}
+
 void DynamicShader::loadShader(const fs::path& frgPath) {
+    GRender::ASSERT(vtxID > 0, "DynamicShader was not initialized!");
     GRender::ASSERT(fs::exists(frgPath), "Shader not found! => " + frgPath.string());
 
     uint32_t frg = createShaderFromFile(frgPath, GL_FRAGMENT_SHADER);
@@ -130,7 +126,7 @@ void DynamicShader::checkShader(uint32_t shader, uint32_t flag) {
         glGetShaderInfoLog(shader, sizeof(error), NULL, error);
 
         success = false;
-        mail->createError("Shader compilation error => " + std::string(error));
+        GRender::mailbox::CreateError("Shader compilation error => " + std::string(error));
     } 
     else {
         success = true;
@@ -146,7 +142,7 @@ void DynamicShader::checkProgram(uint32_t id, uint32_t flag) {
         glGetProgramInfoLog(id, sizeof(error), NULL, error);
 
         success = false;
-        mail->createError("Cannot link shader program => " + std::string(error));
+        GRender::mailbox::CreateError("Cannot link shader program => " + std::string(error));
     } 
     else {
         success = true;

@@ -55,7 +55,7 @@ vec3 GetNormal(vec3 pos) {
 
 Object RayMarch(vec3 pZero, vec3 dir) {
     const int MAX_STEPS = 100;        // maximum number of steps before stop searching
-    const float MAX_DIST = 100.0;     // Sets maximum distance to look towards
+    const float MAX_DIST = 500.0;     // Sets maximum distance to look towards
     const float SURF_DIST = 0.0001;   // How close to the object it must be to return
 
     Object obj;
