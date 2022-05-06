@@ -10,18 +10,27 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_SOURCE_DIR}/bin")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/bin")
 
 set(GRENDER_IMPLOT OFF CACHE BOOL "Implot won't be used")
-add_subdirectory("vendor/GRender/GRender" GRender)
+add_subdirectory("GRender/GRender" GRender)
 
+
+### PRIVATE LIBS #############################################################
+### Colors
+add_library(Colors STATIC "src/colors.cpp")
+target_link_libraries(Colors PRIVATE imgui glm)
+target_include_directories(Colors PRIVATE "include")
+
+### Dynamic Shader
+add_library(DynamicShader STATIC "src/dynamicShader.cpp")
+target_link_libraries(DynamicShader PUBLIC GRender)
+target_include_directories(DynamicShader PUBLIC "include")
+
+
+### GShader ###################################################################
 project(GShader)
 
-add_library(Colors STATIC "colors.h" "colors.cpp")
-target_link_libraries(Colors PRIVATE imgui glm)
+add_executable(GShader "src/gshader.cpp")
+target_link_libraries(GShader PRIVATE Colors DynamicShader)
 
-add_library(DynamicShader STATIC "dynamicShader.h" "dynamicShader.cpp")
-target_link_libraries(DynamicShader PRIVATE GRender)
-
-add_executable(GShader "gshader.h" "gshader.cpp")
-target_link_libraries(GShader PRIVATE GRender Colors DynamicShader)
 
 if (WIN32)
 	set_target_properties(GShader PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:WINDOWS")
