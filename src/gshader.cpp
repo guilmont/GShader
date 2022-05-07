@@ -33,14 +33,14 @@ void GShader::onUserUpdate(float deltaTime) {
 	}
 
 	if (fbuffer.active && keyboard::isPressed('S'))
-		view_specs = !view_specs;
+		view_specs = alt ? false : true;
 
 	if (fbuffer.active && keyboard::isPressed('C')) {
-		colors.open();
+		alt ? colors.close() : colors.open();
 	}
 
 	if (fbuffer.active && keyboard::isPressed('V')) {
-		camera.open();
+		alt ? camera.close() : camera.open();
 	}
 
 	// Automatic controls for camera
