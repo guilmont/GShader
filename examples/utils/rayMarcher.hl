@@ -1,0 +1,54 @@
+#include "header.hl"
+#include "object.hl"
+
+float sdfSphere(vec3 pos, float radius) {
+    return length(pos) - radius;
+}
+
+float sdfCapsule(vec3 pos, float len, float radius) {
+    pos.y -= len * clamp(pos.y / len, 0.0,1.0);
+    return length(pos) - radius;
+}
+
+float sdfTorus(vec3 pos, float radius, float thickness) {
+    float r = length(pos.xz) - radius;
+    return length(vec2(r, pos.y)) - thickness;
+} 
+
+float sdfBox(vec3 pos, vec3 size, float roundCorner) {
+    pos = abs(pos) - 0.5*size;
+    return length(max(vec3(0.0), pos)) + min(max(pos.x, max(pos.y, pos.z)), 0.0) - roundCorner;
+}
+
+//  Implement this function in the main file
+Object GetDist(vec3 pos);
+
+vec3 GetNormal(vec3 pos) {
+    float dp = 0.0001;
+    float d = GetDist(pos).dist;
+    float dx = GetDist(pos + vec3( dp, 0.0, 0.0)).dist;
+    float dy = GetDist(pos + vec3(0.0,  dp, 0.0)).dist;
+    float dz = GetDist(pos + vec3(0.0, 0.0,  dp)).dist;
+    return vec3(dx-d, dy-d, dz-d)/dp;
+}
+
+Object RayMarch(vec3 pZero, vec3 dir) {
+    const int MAX_STEPS = 100;        // maximum number of steps before stop searching
+    const float MAX_DIST = 500.0;     // Sets maximum distance to look towards
+    const float SURF_DIST = 0.0001;   // How close to the object it must be to return
+
+    Object obj;
+    obj.color = vec3(1.0,1.0,1.0);
+    obj.dist = 0.0;
+    for (int k = 0; k < MAX_STEPS; k++) {
+        vec3 pos = pZero + obj.dist * dir;
+        Object another = GetDist(pos);
+        obj.dist += another.dist;
+        obj.color = another.color;
+
+        if (obj.dist > MAX_DIST || another.dist < SURF_DIST) {
+            break;
+        }
+    }
+    return obj;
+}

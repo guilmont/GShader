@@ -2,13 +2,7 @@
 // Part 1: https://www.youtube.com/watch?v=LLZPnh_LK8c
 // Part 2: https://www.youtube.com/watch?v=XaiYKkxvrFM
 
-#version 450 core
-
-in vec2 fragCoord;
-out vec4 fragColor;
-
-uniform float iTime;
-uniform float iRatio;
+#include "utils/header.hl"
 
 float rand21 (vec2 st) {
     return fract(sin(dot(st.xy, vec2(12.9898,78.233)))*43758.5453123);

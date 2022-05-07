@@ -101,6 +101,9 @@ void DynamicShader::setVec3f(const char* name, const float* v) {
 bool DynamicShader::recurseFiles(const fs::path& shadername) {
     fs::path shaderpath = location / shadername;
 
+    fs::path fLocation(location); // storing location, in case we need to move to another folder
+    location  = shaderpath.parent_path();
+
     // the first file is always guaranteed to exist when using the dialog box
     if (!fs::exists(shaderpath)) {
         GRender::mailbox::CreateError( "\"" + shadername.string() + "\" doesn't exist!");
@@ -125,17 +128,22 @@ bool DynamicShader::recurseFiles(const fs::path& shadername) {
             size_t qt2 = line.find('\"', qt1);
 
             fs::path newPath = line.substr(qt1, qt2 - qt1);
-
+            
             if (qt1 == std::string::npos || qt2 == std::string::npos) {
-                std::string error = shadername.string() + " => " + std::to_string(lineZero)
+                std::string error = shadername.string() + " => " + std::to_string(numLines - lineZero+2)
                                   + "(9) Header file not found: '" + line + "'";
 
                 GRender::mailbox::CreateError(error);
                 return false;
             }
 
+            // If the header was already included, no need to do another time
+            if (fileMap.find(newPath.string()) != fileMap.end()) {
+                program += "\n";
+                // numLines++;
+            } 
             // passing header to be recursed
-            if (!recurseFiles(newPath)) {
+            else if (!recurseFiles(newPath)) {
                 return false;
             }
 
@@ -149,9 +157,12 @@ bool DynamicShader::recurseFiles(const fs::path& shadername) {
         }
     }
     arq.close();
+    
+    // Restoring original location
+    location = fLocation;
 
     // Getting range of lines in final program for this file
-    fileMap[shadername.string()].range = {lineZero, numLines};
+    fileMap[shaderpath.string()].range = {lineZero, numLines};
 
     return true;
 }
@@ -165,6 +176,13 @@ uint32_t DynamicShader::createShaderFromFile(const fs::path& shaderPath, GLenum 
     success = recurseFiles(shaderPath.filename());
     if (!success)
         return 0;
+
+    // uint32_t ct = 1;
+    // std::string line;
+    // std::stringstream bah(program);
+    // while(std::getline(bah, line)) {
+    //     std::cout << ct++ << ") " << line << std::endl; 
+    // }
 
     return createShader(program, shaderType);
 }
@@ -204,7 +222,8 @@ void DynamicShader::checkShader(uint32_t shader, uint32_t flag) {
 
             for (auto& [name, data] : fileMap) {
                 if (num >= data.range.first && num <= data.range.second) {
-                    errorMessage += name + " => " + std::to_string(num - data.range.first+1);
+                    size_t size = location.string().size()+1;
+                    errorMessage += name.substr(size) + " => " + std::to_string(num - data.range.first);
                     errorMessage += line.substr(pos) + "\n";
                     break;
                 }

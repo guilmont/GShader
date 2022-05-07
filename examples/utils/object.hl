@@ -1,0 +1,14 @@
+#include "header.hl"
+
+struct Object {
+    vec3 color;
+    float dist;
+};
+
+void objMin(inout Object obj, float dist, vec3 color) {
+    if (obj.dist > dist) {
+        obj.dist = dist;
+        obj.color = color;
+    }
+}
+

@@ -1,0 +1,6 @@
+#include "header.hl"
+
+uniform vec3 iCamPos;
+uniform float iCamYaw;
+uniform float iCamPitch;
+uniform float iFOV;

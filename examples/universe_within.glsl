@@ -2,14 +2,7 @@
 // Part 1: https://www.youtube.com/watch?v=3CycKKJiwis
 // Part 2: https://www.youtube.com/watch?v=KGJUl8Teipk
 
-#version 450 core
-
-in vec2 fragCoord;
-out vec4 fragColor;
-
-uniform float iTime;
-uniform float iRatio;
-
+#include "utils/header.hl"
 
 float DistLine(vec2 p, vec2 a, vec2 b) {
     vec2 pa = p - a, ba = b - a;
