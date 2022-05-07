@@ -68,8 +68,8 @@ void DynamicShader::bind() {
 
 bool DynamicShader::wasUpdated() {
     // if any file was touched since last check
-    for (auto& [name, data] : fileMap) {
-        if (data.modTime != fs::last_write_time(location / name))
+    for (auto& [filepath, data] : fileMap) {
+        if (data.modTime != fs::last_write_time(filepath))
             return true;
     }
     return false;
@@ -111,7 +111,7 @@ bool DynamicShader::recurseFiles(const fs::path& shadername) {
     }
 
     // We also keep a variable with moditication time for automatic update
-    fileMap[shadername.string()].modTime = fs::last_write_time(shaderpath);
+    fileMap[shaderpath.string()].modTime = fs::last_write_time(shaderpath);
 
     int32_t lineZero = numLines+1; // coding lines usually start at 1
 
@@ -138,7 +138,7 @@ bool DynamicShader::recurseFiles(const fs::path& shadername) {
             }
 
             // If the header was already included, no need to do another time
-            if (fileMap.find(newPath.string()) != fileMap.end()) {
+            if (fileMap.find((location / newPath).string()) != fileMap.end()) {
                 program += "\n";
                 // numLines++;
             } 
@@ -177,12 +177,12 @@ uint32_t DynamicShader::createShaderFromFile(const fs::path& shaderPath, GLenum 
     if (!success)
         return 0;
 
-    // uint32_t ct = 1;
-    // std::string line;
-    // std::stringstream bah(program);
-    // while(std::getline(bah, line)) {
-    //     std::cout << ct++ << ") " << line << std::endl; 
-    // }
+    uint32_t ct = 1;
+    std::string line;
+    std::stringstream bah(program);
+    while(std::getline(bah, line)) {
+        std::cout << ct++ << ") " << line << std::endl; 
+    }
 
     return createShader(program, shaderType);
 }
