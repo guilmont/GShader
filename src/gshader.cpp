@@ -7,35 +7,39 @@ GShader::GShader(void) : Application("GShader", 1200, 800, "layout.ini") {
 	*fbuffer = Framebuffer(1200, 800);
 	shader.initialize();
 
-	importShader(); // starts default shader: basic.glsl
+	// starts default shader
+	importShader("../examples/basic.glsl"); 
 }
 
 
-void GShader::importShader() {
+void GShader::importShader(const fs::path& shaderpath) {
 	mailbox::Clear();
+	mailbox::Close();
 	elapsedTime = 0.0f;
-	modTime = fs::last_write_time(shaderPath);
-	shader.loadShader(shaderPath);
+    currentShader = shaderpath;
+	shader.loadShader(shaderpath);
 }
 
 void GShader::onUserUpdate(float deltaTime) {
 
 	bool ctrl = keyboard::isDown(GRender::Key::LEFT_CONTROL) || keyboard::isDown(GRender::Key::RIGHT_CONTROL);
-	bool shft = keyboard::isDown(GRender::Key::LEFT_SHIFT) || keyboard::isDown(GRender::Key::RIGHT_SHIFT);
+	bool alt = keyboard::isDown(GRender::Key::LEFT_ALT) || keyboard::isDown(GRender::Key::RIGHT_ALT);
 
 	if (ctrl && keyboard::isPressed('O')) {
-		auto function = [](const fs::path& path, void* ptr) -> void { *reinterpret_cast<fs::path*>(ptr) = path; };
-		dialog::OpenFile("Open shader...", { "glsl" }, function, &shaderPath);
+		auto function = [](const fs::path& path, void* ptr) -> void { 
+			reinterpret_cast<GShader*>(ptr)->importShader(path);			
+		};
+		dialog::OpenFile("Open shader...", { "glsl" }, function, this);
 	}
 
-	if (shft && keyboard::isPressed('S'))
-		view_specs = true;
+	if (fbuffer.active && keyboard::isPressed('S'))
+		view_specs = !view_specs;
 
-	if (shft && keyboard::isPressed('C')) {
+	if (fbuffer.active && keyboard::isPressed('C')) {
 		colors.open();
 	}
 
-	if (shft && keyboard::isPressed('V')) {
+	if (fbuffer.active && keyboard::isPressed('V')) {
 		camera.open();
 	}
 
@@ -45,18 +49,14 @@ void GShader::onUserUpdate(float deltaTime) {
 
 	// Update shader if it was modified
 	elapsedTime += deltaTime;
-	if (fs::last_write_time(shaderPath) != modTime)
-		importShader();
+	if (shader.wasUpdated())
+		importShader(currentShader);
 
 	//////////////////////////////////////////////////////////
 	// Drawing to framebuffer
 
 	if (shader.hasFailed())
 		return;
-
-	// Let's clean up messages
-	mailbox::Clear();
-	mailbox::Close();
 
 	glm::uvec2 res = fbuffer->getSize();
 	float aRatio = float(res.x) / float(res.y);
@@ -135,8 +135,10 @@ void GShader::ImGuiMenuLayer(void) {
 	if (ImGui::BeginMenu("File")) {
 
 		if (ImGui::MenuItem("Open shader...", "Ctrl+O")) {
-			auto function = [](const fs::path& path, void* ptr) -> void { *reinterpret_cast<fs::path*>(ptr) = path; };
-			dialog::OpenFile("Open shader...", { "glsl" }, function, &shaderPath);
+			auto function = [](const fs::path& path, void* ptr) -> void { 
+				reinterpret_cast<GShader*>(ptr)->importShader(path);			
+			};
+			dialog::OpenFile("Open shader...", { "glsl" }, function, this);
 		}
 
 		if (ImGui::MenuItem("Exit"))
@@ -146,14 +148,14 @@ void GShader::ImGuiMenuLayer(void) {
 	}
 
 	if (ImGui::BeginMenu("Options")) {
-		if (ImGui::MenuItem("Specs...", "Shift+S"))
+		if (ImGui::MenuItem("Specs...", "S"))
 			view_specs = true;
 
-		if (ImGui::MenuItem("Colors...", "Shift+C")) {
+		if (ImGui::MenuItem("Colors...", "C")) {
 			colors.open();
 		}
 
-		if (ImGui::MenuItem("Camera...", "Shift+V")) {
+		if (ImGui::MenuItem("Camera...", "V")) {
 			camera.open();
 		}
 

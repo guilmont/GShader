@@ -10,7 +10,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_SOURCE_DIR}/bin")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/bin")
 
 set(GRENDER_IMPLOT OFF CACHE BOOL "Implot won't be used")
-add_subdirectory("GRender/GRender" GRender)
+add_subdirectory("vendor/GRender/GRender" GRender)
 
 
 ### PRIVATE LIBS #############################################################

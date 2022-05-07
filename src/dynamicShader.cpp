@@ -2,10 +2,6 @@
 
 namespace fs = std::filesystem;
 
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-
-
 DynamicShader::~DynamicShader(void) {
     glDeleteShader(vtxID);
     glDeleteProgram(programID);
@@ -69,6 +65,16 @@ void DynamicShader::bind() {
     glUseProgram(programID);
 }
 
+
+bool DynamicShader::wasUpdated() {
+    // if any file was touched since last check
+    for (auto& [name, data] : fileMap) {
+        if (data.modTime != fs::last_write_time(location / name))
+            return true;
+    }
+    return false;
+}
+
 void DynamicShader::setInteger(const char* name, int val) {
     int32_t loc = glGetUniformLocation(programID, name);
     glUniform1i(loc, val);
@@ -92,14 +98,75 @@ void DynamicShader::setVec3f(const char* name, const float* v) {
 /////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
 
-uint32_t DynamicShader::createShaderFromFile(const fs::path& shaderPath, GLenum shaderType) {
-    // Importing file into stream
-    std::ifstream arq(shaderPath);
-    std::stringstream strData;
-    strData << arq.rdbuf();
+bool DynamicShader::recurseFiles(const fs::path& shadername) {
+    fs::path shaderpath = location / shadername;
+
+    // the first file is always guaranteed to exist when using the dialog box
+    if (!fs::exists(shaderpath)) {
+        GRender::mailbox::CreateError( "\"" + shadername.string() + "\" doesn't exist!");
+        return false;
+    }
+
+    // We also keep a variable with moditication time for automatic update
+    fileMap[shadername.string()].modTime = fs::last_write_time(shaderpath);
+
+    int32_t lineZero = numLines+1; // coding lines usually start at 1
+
+    // reading file line by line and checking if it is a include line or normal program
+    std::string line;
+    std::ifstream arq(shaderpath);
+    while(std::getline(arq, line)) {
+        size_t pos = line.find("#include");
+        
+        // We have an include file
+        if (pos < line.size()) {
+            // finding the quotes for the header name
+            size_t qt1 = line.find('\"', pos) + 1;
+            size_t qt2 = line.find('\"', qt1);
+
+            fs::path newPath = line.substr(qt1, qt2 - qt1);
+
+            if (qt1 == std::string::npos || qt2 == std::string::npos) {
+                std::string error = shadername.string() + " => " + std::to_string(lineZero)
+                                  + "(9) Header file not found: '" + line + "'";
+
+                GRender::mailbox::CreateError(error);
+                return false;
+            }
+
+            // passing header to be recursed
+            if (!recurseFiles(newPath)) {
+                return false;
+            }
+
+            // setup line zero for normal program
+            lineZero = numLines;
+        }
+        // normal program
+        else {
+            program += line + "\n";
+            numLines++;
+        }
+    }
     arq.close();
 
-    return createShader(strData.str(), shaderType);
+    // Getting range of lines in final program for this file
+    fileMap[shadername.string()].range = {lineZero, numLines};
+
+    return true;
+}
+
+uint32_t DynamicShader::createShaderFromFile(const fs::path& shaderPath, GLenum shaderType) {
+    numLines = 0;
+    program.clear();
+    fileMap.clear();
+    location = shaderPath.parent_path();
+
+    success = recurseFiles(shaderPath.filename());
+    if (!success)
+        return 0;
+
+    return createShader(program, shaderType);
 }
 
 uint32_t DynamicShader::createShader(const std::string& shaderData, GLenum shaderType) {
@@ -126,7 +193,25 @@ void DynamicShader::checkShader(uint32_t shader, uint32_t flag) {
         glGetShaderInfoLog(shader, sizeof(error), NULL, error);
 
         success = false;
-        GRender::mailbox::CreateError("Shader compilation error => " + std::string(error));
+        std::string errorMessage = "Shader compilation error\n";
+
+        // remapping error to correct file and line
+        std::string line;
+        std::stringstream err(error);
+        while(std::getline(err, line)) {
+            size_t pos = line.find_first_of('(');
+            uint32_t num = atoi(line.substr(2, pos - 2).c_str());
+
+            for (auto& [name, data] : fileMap) {
+                if (num >= data.range.first && num <= data.range.second) {
+                    errorMessage += name + " => " + std::to_string(num - data.range.first+1);
+                    errorMessage += line.substr(pos) + "\n";
+                    break;
+                }
+            }
+        }
+
+        GRender::mailbox::CreateError(errorMessage);
     } 
     else {
         success = true;

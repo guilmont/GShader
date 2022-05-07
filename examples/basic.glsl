@@ -1,10 +1,5 @@
-#version 450 core
+#include "header.glsl"
 
-in vec2 fragCoord;
-out vec4 fragColor;
-
-uniform float iTime;
-uniform vec2 iMouse;
 
 void main() {
 	float r = 0.5 + 0.5*sin(iTime);

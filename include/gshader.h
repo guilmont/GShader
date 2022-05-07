@@ -26,14 +26,12 @@ public:
 	void ImGuiLayer(void) override;
 	void ImGuiMenuLayer(void) override;
 
-private:
-	float elapsedTime = 0.0f;
-	fs::path shaderPath = "../examples/basic.glsl";
-	fs::file_time_type modTime;  // used to reload shader if it was modified
-	
-	void importShader();
+	void importShader(const fs::path& shaderpath);
 
 private:
+	fs::path currentShader;
+	float elapsedTime = 0.0f;
+
 	bool view_specs = false;
 
 	quad::Specs specs;
