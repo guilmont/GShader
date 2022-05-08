@@ -11,37 +11,44 @@ GShader::GShader(void) : Application("GShader", 1200, 800, "layout.ini") {
 	importShader("../examples/basic.glsl"); 
 }
 
-
-void GShader::importShader(const fs::path& shaderpath) {
-	mailbox::Clear();
-	mailbox::Close();
-	elapsedTime = 0.0f;
-    currentShader = shaderpath;
-	shader.loadShader(shaderpath);
-}
-
 void GShader::onUserUpdate(float deltaTime) {
-
 	bool ctrl = keyboard::isDown(GRender::Key::LEFT_CONTROL) || keyboard::isDown(GRender::Key::RIGHT_CONTROL);
 	bool alt = keyboard::isDown(GRender::Key::LEFT_ALT) || keyboard::isDown(GRender::Key::RIGHT_ALT);
 
-	if (ctrl && keyboard::isPressed('O')) {
+    ///////////////////////////////////////////////////////
+    // IO
+    if (ctrl && keyboard::isPressed('O')) {
 		auto function = [](const fs::path& path, void* ptr) -> void { 
 			reinterpret_cast<GShader*>(ptr)->importShader(path);			
 		};
 		dialog::OpenFile("Open shader...", { "glsl" }, function, this);
 	}
 
-	if (fbuffer.active && keyboard::isPressed('S'))
+    if (ctrl && keyboard::isPressed('L')) {
+        auto function = [](const fs::path& path, void* ptr) -> void {
+            reinterpret_cast<GShader*>(ptr)->loadConfig(path);
+        };
+        dialog::OpenFile("Load configurations...", {"json"}, function, this);
+    }
+
+    if (ctrl && keyboard::isPressed('S')) {
+        auto function = [](const fs::path& path, void* ptr) -> void {
+            reinterpret_cast<GShader*>(ptr)->saveConfig(path);
+        };
+        dialog::SaveFile("Save configurations...", {"json"}, function, this);
+    }
+
+    ///////////////////////////////////////////////////////
+    // Property windows
+	
+    if (fbuffer.active && keyboard::isPressed('I'))
 		view_specs = alt ? false : true;
 
-	if (fbuffer.active && keyboard::isPressed('C')) {
+	if (fbuffer.active && keyboard::isPressed('C'))
 		alt ? colors.close() : colors.open();
-	}
 
-	if (fbuffer.active && keyboard::isPressed('V')) {
+	if (fbuffer.active && keyboard::isPressed('V'))
 		alt ? camera.close() : camera.open();
-	}
 
 	// Automatic controls for camera
 	if (fbuffer.active)
@@ -68,10 +75,10 @@ void GShader::onUserUpdate(float deltaTime) {
 	shader.setFloat("iTime", elapsedTime);
 	shader.setFloat("iRatio", aRatio);
 
-	shader.setVec3f("iCamPos", &camera.position()[0]);
+	shader.setVec3f("iCamPos", glm::value_ptr(camera.getPosition()));
 	shader.setFloat("iCamYaw", camera.getYaw());
 	shader.setFloat("iCamPitch", camera.getPitch());
-	shader.setFloat("iFOV", camera.fieldView());
+	shader.setFloat("iFOV", camera.getFOV());
 
 
 	float vec[2] = { 0.0f, 0.0f };
@@ -134,12 +141,28 @@ void GShader::ImGuiLayer(void) {
 void GShader::ImGuiMenuLayer(void) {
 	if (ImGui::BeginMenu("File")) {
 
-		if (ImGui::MenuItem("Open shader...", "Ctrl+O")) {
+        if (ImGui::MenuItem("Open shader...", "Ctrl+O")) {
 			auto function = [](const fs::path& path, void* ptr) -> void { 
 				reinterpret_cast<GShader*>(ptr)->importShader(path);			
 			};
 			dialog::OpenFile("Open shader...", { "glsl" }, function, this);
 		}
+
+        if (ImGui::MenuItem("Load configurations...", "Ctrl+L")) {
+            auto function = [](const fs::path& path, void* ptr) -> void {
+                reinterpret_cast<GShader*>(ptr)->loadConfig(path);
+            };
+            dialog::OpenFile("Load configurations...", {"json"}, function, this);
+        }
+
+        if (ImGui::MenuItem("Save configurations...", "Ctrl+S")) {
+            auto function = [](const fs::path& path, void* ptr) -> void {
+                reinterpret_cast<GShader*>(ptr)->saveConfig(path);
+            };
+            dialog::SaveFile("Save configurations...", {"json"}, function, this);
+        }
+
+		
 
 		if (ImGui::MenuItem("Exit"))
 			closeApp();
@@ -148,7 +171,7 @@ void GShader::ImGuiMenuLayer(void) {
 	}
 
 	if (ImGui::BeginMenu("Options")) {
-		if (ImGui::MenuItem("Specs...", "S"))
+		if (ImGui::MenuItem("Specs...", "I"))
 			view_specs = true;
 
 		if (ImGui::MenuItem("Colors...", "C")) {
@@ -161,4 +184,41 @@ void GShader::ImGuiMenuLayer(void) {
 
 		ImGui::EndMenu();
 	}
+}
+
+void GShader::importShader(const fs::path& shaderpath) {
+	mailbox::Clear();
+	mailbox::Close();
+	elapsedTime = 0.0f;
+    
+	if (shaderpath != currentShader) {
+		currentShader = shaderpath;
+		colors = Colors();
+		camera = GRender::Camera();
+	}
+
+	shader.loadShader(shaderpath);
+}
+
+void GShader::loadConfig(const fs::path& configpath) {
+	GRender::ASSERT(fs::exists(configpath), "'" + configpath.string() + "' doesn't exist!");
+	
+	ConfigFile config(configpath);
+	config.load();
+	config.get(currentShader);
+	config.get(colors);
+	config.get(camera);
+
+    currentShader = configpath.parent_path() / currentShader;
+	importShader(currentShader);
+}
+
+void GShader::saveConfig(const fs::path& configpath) {
+	ConfigFile config(configpath);
+    fs::path relPath = fs::relative(currentShader, configpath.parent_path());
+	
+    config.insert(relPath);
+	config.insert(colors);
+	config.insert(camera);
+	config.save();
 }

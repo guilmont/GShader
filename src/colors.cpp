@@ -2,6 +2,11 @@
 
 #include "imgui.h"
 
+
+void Colors::append(const std::string& name, const glm::vec3& color) {
+	mColors["##" + name] = color;
+}
+
 void Colors::addColor() {
 	ImGui::Begin("New color", &addOn);
 	ImGui::SetWindowSize({ 500.0f, 140.0f });
@@ -29,7 +34,7 @@ void Colors::addColor() {
 	if (ImGui::Button("Add") || enter) {
 		std::string name(newColorName);
 		if (!name.empty()) {
-			mColors["##" + std::string{ newColorName }] = newColor;
+			append(newColorName, newColor);
 			reset();
 		}
 	}

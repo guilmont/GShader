@@ -1,8 +1,13 @@
 #include "utils/rayMarcher.hl"
 #include "utils/camera.hl"
 
-uniform vec3 Floor;
-uniform vec3 Dress;
+// Colors defined in config file
+uniform vec3 cDress;
+uniform vec3 cFloor;
+uniform vec3 cHat;
+uniform vec3 cSkin;
+uniform vec3 cWall;
+
 
 mat2 Rotate(float angle) {
     angle *= 0.01745329252; // deg to rad
@@ -13,13 +18,6 @@ mat2 Rotate(float angle) {
 
 Object GetDist(vec3 pos) {
     float t =  3.0*iTime;
-
-    vec3 
-        cFloor = vec3(0.231, 0.6, 0.1),
-        cWall  = vec3(0.8, 0.8, 0.8),
-        cSkin  = vec3(0.525, 0.253, 0.184),
-        cHat   = vec3(0.8, 0.05, 0.05),
-        cDress = vec3(1.0, .718, 0.01);
 
     Object obj;
     obj.dist = pos.y;
@@ -38,8 +36,8 @@ Object GetDist(vec3 pos) {
     // // body
     p = pos - vec3(0.0, 5.4, 0.0);
     float fr = 0.25*(4.0-p.y);
-    cDress *= 0.2 + pow(abs(sin(10.*p.y)), 2.0);
-    objMin(obj, sdfBox(p, vec3(2.0*fr, 4.0, 1.0*fr), 0.2), cDress);
+    vec3 dressColor = cDress * (0.2 + pow(abs(sin(10.*p.y)), 2.0));
+    objMin(obj, sdfBox(p, vec3(2.0*fr, 4.0, 1.0*fr), 0.2), dressColor);
 
     // arms
     vec3 p2 = vec3(abs(p.x), p.yz) - vec3(1.3, 1.0, 0.0);
@@ -68,11 +66,12 @@ Object GetDist(vec3 pos) {
 void main() {
     // moving origin to center of screen and correcting for aspect ratio
     vec2 uv = (2.0 * vec2(fragCoord.x, fragCoord.y) - 1.0) * vec2(iRatio, 1.0);
+    float fov = tan(0.5 * iFOV);
 
     // setup where we are and where we are looking
     vec3 rayOrg = iCamPos;
-    float pitch = iFOV*uv.y + iCamPitch;
-    float yaw = iFOV*uv.x + iCamYaw;
+    float pitch = fov*uv.y + iCamPitch;
+    float yaw = fov*uv.x + iCamYaw;
 
     vec3 rayDir;
     rayDir.x = cos(yaw)*cos(pitch);

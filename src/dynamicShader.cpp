@@ -177,13 +177,6 @@ uint32_t DynamicShader::createShaderFromFile(const fs::path& shaderPath, GLenum 
     if (!success)
         return 0;
 
-    uint32_t ct = 1;
-    std::string line;
-    std::stringstream bah(program);
-    while(std::getline(bah, line)) {
-        std::cout << ct++ << ") " << line << std::endl; 
-    }
-
     return createShader(program, shaderType);
 }
 
@@ -218,7 +211,7 @@ void DynamicShader::checkShader(uint32_t shader, uint32_t flag) {
         std::stringstream err(error);
         while(std::getline(err, line)) {
             size_t pos = line.find_first_of('(');
-            uint32_t num = atoi(line.substr(2, pos - 2).c_str());
+            int32_t num = atoi(line.substr(2, pos - 2).c_str());
 
             for (auto& [name, data] : fileMap) {
                 if (num >= data.range.first && num <= data.range.second) {

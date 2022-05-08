@@ -2,6 +2,8 @@
 #include "dynamicShader.h"
 #include "colors.h"
 
+#include "configFile.h"
+
 using namespace GRender;
 namespace fs = std::filesystem;
 
@@ -28,6 +30,9 @@ public:
 
 	void importShader(const fs::path& shaderpath);
 
+	void loadConfig(const fs::path& configpath);
+	void saveConfig(const fs::path& configpath);
+
 private:
 	fs::path currentShader;
 	float elapsedTime = 0.0f;
@@ -42,7 +47,6 @@ private:
 	DynamicShader shader;
 
 	Ref<Framebuffer> fbuffer;
-
 };
 
 GRender::Application* GRender::createApplication() {

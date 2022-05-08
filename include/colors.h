@@ -1,13 +1,15 @@
 #pragma once
 
+#include <map>
 #include <string>
-#include <unordered_map>
 #include <glm/glm.hpp>
 
 class Colors {
 public:
 	Colors() = default;
 	~Colors() = default;
+
+	void append(const std::string& name, const glm::vec3& color);
 
 	void addColor();
 	void showColors();
@@ -25,7 +27,7 @@ public:
 
 private:
 	bool active = false;
-	std::unordered_map<std::string, glm::vec3> mColors;
+	std::map<std::string, glm::vec3> mColors;
 
 private:
 	// specs for adding new color
