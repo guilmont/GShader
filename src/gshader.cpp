@@ -18,10 +18,14 @@ void GShader::onUserUpdate(float deltaTime) {
     ///////////////////////////////////////////////////////
     // IO
     if (ctrl && keyboard::isPressed('O')) {
-		auto function = [](const fs::path& path, void* ptr) -> void { 
-			reinterpret_cast<GShader*>(ptr)->importShader(path);			
+		auto function = [](const fs::path& path, void* ptr) -> void {
+			GShader* gs = reinterpret_cast<GShader*>(ptr);
+			if (path.extension() == ".json")
+				gs->loadConfig(path);
+			else
+				gs->importShader(path);
 		};
-		dialog::OpenFile("Open shader...", { "glsl" }, function, this);
+		dialog::OpenFile("Open shader...", { "json", "glsl" }, function, this);
 	}
 
     if (ctrl && keyboard::isPressed('L')) {
@@ -143,17 +147,14 @@ void GShader::ImGuiMenuLayer(void) {
 
         if (ImGui::MenuItem("Open shader...", "Ctrl+O")) {
 			auto function = [](const fs::path& path, void* ptr) -> void { 
-				reinterpret_cast<GShader*>(ptr)->importShader(path);			
+				GShader* gs = reinterpret_cast<GShader*>(ptr);
+				if (path.extension() == ".json")
+					gs->loadConfig(path);
+				else 
+					gs->importShader(path);
 			};
-			dialog::OpenFile("Open shader...", { "glsl" }, function, this);
+			dialog::OpenFile("Open shader...", { "json", "glsl" }, function, this);
 		}
-
-        if (ImGui::MenuItem("Load configurations...", "Ctrl+L")) {
-            auto function = [](const fs::path& path, void* ptr) -> void {
-                reinterpret_cast<GShader*>(ptr)->loadConfig(path);
-            };
-            dialog::OpenFile("Load configurations...", {"json"}, function, this);
-        }
 
         if (ImGui::MenuItem("Save configurations...", "Ctrl+S")) {
             auto function = [](const fs::path& path, void* ptr) -> void {
@@ -161,8 +162,6 @@ void GShader::ImGuiMenuLayer(void) {
             };
             dialog::SaveFile("Save configurations...", {"json"}, function, this);
         }
-
-		
 
 		if (ImGui::MenuItem("Exit"))
 			closeApp();

@@ -8,7 +8,6 @@ uniform vec3 cHat;
 uniform vec3 cSkin;
 uniform vec3 cWall;
 
-
 mat2 Rotate(float angle) {
     angle *= 0.01745329252; // deg to rad
     float cs = cos(angle);
@@ -19,11 +18,19 @@ mat2 Rotate(float angle) {
 Object GetDist(vec3 pos) {
     float t =  3.0*iTime;
 
+    vec3 
+        cFloor = vec3(0.231, 0.6, 0.1),
+        cWall  = vec3(0.8, 0.8, 0.8),
+        cSkin  = vec3(0.525, 0.253, 0.184),
+        cHat   = vec3(0.8, 0.05, 0.05),
+        cDress = vec3(1.0, .718, 0.01);
+
     Object obj;
     obj.dist = pos.y;
     obj.color = cFloor;
 
-    objMin(obj, 5.0-pos.z, cWall);
+    objMin(obj, 30.0 - abs(pos.x), cWall);
+    objMin(obj, 25.0-abs(pos.z+20), cWall);
 
     pos.y -= 2.0*abs(sin(t));
     pos.xy *= Rotate(5.0*pow(sin(t), 3.0));
@@ -36,8 +43,8 @@ Object GetDist(vec3 pos) {
     // // body
     p = pos - vec3(0.0, 5.4, 0.0);
     float fr = 0.25*(4.0-p.y);
-    vec3 dressColor = cDress * (0.2 + pow(abs(sin(10.*p.y)), 2.0));
-    objMin(obj, sdfBox(p, vec3(2.0*fr, 4.0, 1.0*fr), 0.2), dressColor);
+    cDress *= 0.2 + pow(abs(sin(10.*p.y)), 2.0);
+    objMin(obj, sdfBox(p, vec3(2.0*fr, 4.0, 1.0*fr), 0.2), cDress);
 
     // arms
     vec3 p2 = vec3(abs(p.x), p.yz) - vec3(1.3, 1.0, 0.0);
@@ -66,7 +73,7 @@ Object GetDist(vec3 pos) {
 void main() {
     // moving origin to center of screen and correcting for aspect ratio
     vec2 uv = (2.0 * vec2(fragCoord.x, fragCoord.y) - 1.0) * vec2(iRatio, 1.0);
-    float fov = tan(0.5 * iFOV);
+    float fov = tan(0.5*iFOV);
 
     // setup where we are and where we are looking
     vec3 rayOrg = iCamPos;
