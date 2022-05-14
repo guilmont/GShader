@@ -62,6 +62,7 @@ void Colors::showColors() {
 	ImGui::BeginChild("child_2", size, true);
 
 	for (auto& [name, color] : mColors) {
+		ImGui::PushID(name.c_str());
 		char local[128] = { 0 };
 		std::copy(name.begin()+2, name.end(), local);
 
@@ -80,10 +81,11 @@ void Colors::showColors() {
 		if (ImGui::Button("X", {0.05f * size.x, 0.0f})) {
 			toRemove = name;
 		}
+		ImGui::PopID();
 	}
 
 	if (!toRemove.empty()) {
-		mColors.erase(toRemove);
+ 			mColors.erase(toRemove);
 	}
 
 	ImGui::EndChild();
