@@ -19,8 +19,6 @@ target_include_directories(Json INTERFACE "vendor/nlohmann/")
 
 ### PRIVATE LIBS #############################################################
 ### Colors
-
-
 add_library(Colors STATIC "src/colors.cpp")
 target_include_directories(Colors PRIVATE "include")
 target_link_libraries(Colors PRIVATE imgui glm)
@@ -30,6 +28,7 @@ add_library(DynamicShader STATIC "src/dynamicShader.cpp")
 target_include_directories(DynamicShader PUBLIC "include")
 target_link_libraries(DynamicShader PUBLIC GRender)
 
+### Configuration file
 add_library(ConfigFile STATIC "src/configFile.cpp")
 target_include_directories(ConfigFile PRIVATE "include")
 target_link_libraries(ConfigFile PUBLIC Json GRender Colors)

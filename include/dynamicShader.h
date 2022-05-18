@@ -49,7 +49,7 @@ private:
     bool recurseFiles(const std::filesystem::path& shadername);
 
     // Tracks which line came from which file
-    int32_t numLines;
+    int32_t numLines = 0;
     std::string program;
     std::filesystem::path location;
     std::unordered_map<std::string, Data> fileMap;

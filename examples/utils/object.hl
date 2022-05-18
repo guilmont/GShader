@@ -3,6 +3,7 @@
 struct Object {
     vec3 color;
     float dist;
+    int index;
 };
 
 void objMin(inout Object obj, float dist, vec3 color) {
@@ -12,3 +13,10 @@ void objMin(inout Object obj, float dist, vec3 color) {
     }
 }
 
+void objMin(inout Object obj, float dist, vec3 color, int index) {
+    if (obj.dist > dist) {
+        obj.dist = dist;
+        obj.color = color;
+        obj.index = index;
+    }
+}

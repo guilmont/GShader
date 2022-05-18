@@ -24,7 +24,7 @@ float sdfBox(vec3 pos, vec3 size, float roundCorner) {
 Object GetDist(vec3 pos);
 
 vec3 GetNormal(vec3 pos) {
-    float dp = 0.0001;
+    float dp = 0.005;
     float d = GetDist(pos).dist;
     float dx = GetDist(pos + vec3( dp, 0.0, 0.0)).dist;
     float dy = GetDist(pos + vec3(0.0,  dp, 0.0)).dist;
@@ -33,8 +33,8 @@ vec3 GetNormal(vec3 pos) {
 }
 
 Object RayMarch(vec3 pZero, vec3 dir) {
-    const int MAX_STEPS = 100;        // maximum number of steps before stop searching
-    const float MAX_DIST = 500.0;     // Sets maximum distance to look towards
+    const int MAX_STEPS = 1000;        // maximum number of steps before stop searching
+    const float MAX_DIST = 15000.0;     // Sets maximum distance to look towards
     const float SURF_DIST = 0.0001;   // How close to the object it must be to return
 
     Object obj;

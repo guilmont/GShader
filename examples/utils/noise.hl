@@ -1,0 +1,35 @@
+#include "header.hl"
+
+float noise21(vec2 uv) {
+    return fract(1235.4 * sin(5456.7 * uv.x + 8629.1 * uv.y));
+}
+
+float smoothNoise(vec2 uv) {
+    vec2 lv = fract(uv);
+    vec2 id = floor(uv);
+
+    lv = lv * lv * (3.0 - 2.0*lv);
+    float bl = noise21(id + vec2(0.0, 0.0));
+    float br = noise21(id + vec2(1.0, 0.0));
+    float tl = noise21(id + vec2(0.0, 1.0));
+    float tr = noise21(id + vec2(1.0, 1.0));
+
+    float bot = mix(bl, br, lv.x);
+    float top = mix(tl, tr, lv.x);
+    return mix(bot, top, lv.y);
+}
+
+float FBM(vec2 uv, int nodes) {
+    float
+        sum = 1.0, coeff = 1.0, val = smoothNoise(uv);
+
+    mat2 rot = mat2(0.8, -0.6, 0.6, 0.8); // pitagoras angles 3,4,5
+
+    for (int n = 1; n < nodes; n++) {
+        coeff *= 0.5;
+        uv *= 2.0*rot;
+        val += coeff * smoothNoise(uv);
+        sum += coeff;
+    }
+    return val / sum;
+}

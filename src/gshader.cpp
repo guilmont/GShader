@@ -120,7 +120,6 @@ void GShader::ImGuiLayer(void) {
 
 	// External utility to edit colors on the fly
 	colors.showColors();
-
 	camera.display();
 
 	//////////////////////////////////////////////////////////////////////////////
@@ -190,6 +189,7 @@ void GShader::importShader(const fs::path& shaderpath) {
 	mailbox::Close();
 	elapsedTime = 0.0f;
     
+	// In case we simply saved the glsl file, we don't need to reset anything
 	if (shaderpath != currentShader) {
 		currentShader = shaderpath;
 		colors = Colors();
@@ -204,11 +204,15 @@ void GShader::loadConfig(const fs::path& configpath) {
 	
 	ConfigFile config(configpath);
 	config.load();
-	config.get(currentShader);
-	config.get(colors);
-	config.get(camera);
+	
+	fs::path shaderpath = config.get<fs::path>();
+	if (shaderpath.empty())
+		return;
 
-    currentShader = configpath.parent_path() / currentShader;
+	currentShader = shaderpath;
+	colors = config.get<Colors>();
+	camera = config.get<GRender::Camera>();
+
 	importShader(currentShader);
 }
 

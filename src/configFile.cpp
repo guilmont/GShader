@@ -27,18 +27,21 @@ void ConfigFile::save() {
 // Shader path
 template<>
 void ConfigFile::insert(const fs::path& relShaderPath) {
-    data["relativePath"] = relShaderPath.string();
+    std::string var = relShaderPath.string();
+    std::replace(var.begin(), var.end(), '\\','/');
+    data["relativePath"] = var;
 }
 
 template<>
-void ConfigFile::get(fs::path& relShaderPath) {
-    bool check = data.contains("relativePath");
-    GRender::ASSERT(check, "Configuration file doesn't contain a relative path!");
-    if (!check) return;
-
+fs::path ConfigFile::get() {
     json& relPath = data["relativePath"];
-    if (!relPath.is_null()) 
-        relShaderPath = relPath.get<fs::path>();
+    if (relPath.is_null()) {
+        GRender::mailbox::CreateWarn("Configuration file set to null!");
+        return fs::path();
+    }
+    else {
+        return configpath.parent_path() / relPath.get<fs::path>();
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -52,19 +55,20 @@ void ConfigFile::insert(const Colors& colors) {
 }
 
 template<>
-void ConfigFile::get(Colors& colors) {
-    bool check = data.contains("colors");
-    GRender::ASSERT(check, "Configuration file doesn't contain color data!");
-    if (!check) return;
-    
+Colors ConfigFile::get() {
     json& aux = data["colors"];
-    if (aux.is_null()) return;
+    if (aux.is_null()) { 
+        return Colors(); 
+    }
 
+    Colors colors;
     for (const auto& [name, cor] : aux.items()) {
         colors.append(name, {cor[0].get<float>(), 
                              cor[1].get<float>(),
                              cor[2].get<float>()});
     }
+
+    return colors;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -81,19 +85,17 @@ void ConfigFile::insert(const GRender::Camera& cam) {
 }
 
 template<>
-void ConfigFile::get(GRender::Camera& cam) {
-    bool check = data.contains("camera");
-    GRender::ASSERT(check, "Configuration file doesn't contain camera data!");
-    if(!check) return;
-
+GRender::Camera ConfigFile::get() {
     json& aux = data["camera"];
-    if (aux.is_null()) return;
+    if (aux.is_null()) { return GRender::Camera(); }
 
     json& _pos = aux["position"];
     glm::vec3 pos = {_pos[0].get<float>(),
                      _pos[1].get<float>(),
                      _pos[2].get<float>()};
 
+
+    GRender::Camera cam;
     cam.setDefaultPosition(pos);
     cam.setPosition(pos);
 
@@ -106,6 +108,8 @@ void ConfigFile::get(GRender::Camera& cam) {
     cam.setYaw(yaw);
 
     cam.setFOV(aux["fov"].get<float>());
+
+    return cam;
 }
 
 
