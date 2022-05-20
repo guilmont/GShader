@@ -45,6 +45,7 @@ Object RayMarch(vec3 pZero, vec3 dir) {
         Object another = GetDist(pos);
         obj.dist += another.dist;
         obj.color = another.color;
+        obj.index = another.index;
 
         if (obj.dist > MAX_DIST || another.dist < SURF_DIST) {
             break;

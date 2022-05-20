@@ -10,7 +10,6 @@ uniform vec3 vAng;
 
 #define GROUND 1
 #define LAKE 2
-#define SKY 3
 
 mat2 Rotate(float angle) {
     angle *= 0.01745329252; // deg to rad
@@ -21,17 +20,17 @@ mat2 Rotate(float angle) {
 
 Object GetDist(vec3 pos) {
     Object obj;
-    obj.dist = pos.y - (650.0*FBM(pos.xz/800.0, 12) + 100.0);
+    obj.dist = pos.y - (850.0*FBM(pos.xz/800.0, 12) + 100.0);
     obj.color = cGround;
+    obj.index = GROUND;
     
     // Lake
-    float dist = pos.y - 250.0; 
+    float dist = pos.y - 350.0; 
     dist -=  2.0*FBM(0.02*pos.xz + sin(iTime*vec2(0.1,-0.25)), 2);
-    objMin(obj, dist, cLake);
+    objMin(obj, dist, cLake, LAKE);
 
     return obj;
 }
-
 
 void main() {
     // moving origin to center of screen and correcting for aspect ratio
@@ -49,7 +48,6 @@ void main() {
     rayDir.z = sin(yaw)*cos(pitch);
 
     Object obj = RayMarch(rayOrg, rayDir);
-
     vec3 pos = rayOrg + obj.dist * rayDir;
     vec3 normal = GetNormal(pos);
 
@@ -61,17 +59,32 @@ void main() {
     float dif = max(0.0, dot(normal, lightDir));
 
     //shadow
-    float dist2Light = RayMarch(pos + 10.0*normal, lightDir).dist;
+    float dist2Light = RayMarch(pos + 3.0*normal, lightDir).dist;
     if (dist2Light < 500.0)
         dif *= 0.05;
 
-
     uv.y+= 0.3;
     float var = 0.8*FBM(4.0*uv, 12);
-    vec3 skyColor = mix(cSky - 0.3*uv.y, vec3(var), smoothstep(0.2,0.6, var));
+    vec3 skyColor = mix(cSky - 0.2*uv.y, vec3(var), smoothstep(0.2,0.6, var));
+
+    vec3 color = obj.color*dif;
+
+    if (obj.index == LAKE) {
+        vec3 refDir = reflect(rayDir, normal);
+        Object hi = RayMarch(pos + 5.0 * normal, refDir);
+        pos +=  hi.dist * refDir;
+        normal = GetNormal(pos);
+        float var = dif + max(0.0, dot(normal, lightDir));
+    
+        if (hi.dist < 15000) 
+            color = mix(color, hi.color*var, 0.7);
+        else
+            color = mix(color, skyColor*dif, 0.7);
+    }   
 
     float nearFar = smoothstep(15000.0, 15000.1, obj.dist); // To avoid far field aberrationi
-    vec3 color = mix(obj.color*dif, skyColor, nearFar);
+    color = mix(color, skyColor, nearFar);
+
 
     // Let's add some fog to the distance
     color = mix(cSky, color, exp(-0.00002 * vec3(1.0,2.0,4.0) * pow(obj.dist, 0.87))); 
@@ -83,3 +96,5 @@ void main() {
 
     fragColor = vec4(color, 1.0);
 }
+
+//0.5,0.682,0.869
