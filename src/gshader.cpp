@@ -1,15 +1,37 @@
 #include "gshader.h"
 
-GShader::GShader(void) : Application("GShader", 1200, 800, "layout.ini") {
+GRender::Application* GRender::createApplication(int argc, char** argv) {
+	if (argc == 1)
+		return new GShader("../examples/basic.glsl");
+	else
+		return new GShader(argv[1]);
+}
+
+
+GShader::GShader(const fs::path& filepath) : Application("GShader", 1200, 800, "layout.ini") {
 	quad = quad::Quad(1);
 	specs.size = { 2.0f, 2.0f };
 
 	*fbuffer = Framebuffer(1200, 800);
 	shader.initialize();
 
-	// starts default shader
-	importShader("../examples/basic.glsl"); 
+	if (!fs::exists(filepath)) {
+		importShader("../examples/basic.glsl");
+		mailbox::CreateError("File doesn't exist: " + filepath.string());
+	} else {
+		std::string ext = filepath.extension().string();
+		if (ext == ".glsl")
+			importShader(filepath);
+		else if (ext == ".json")
+			loadConfig(filepath);
+		else {
+			importShader("../examples/basic.glsl");
+			mailbox::CreateError("File extension not supported: " + filepath.filename().string());
+		}
+	}
 }
+
+
 
 void GShader::onUserUpdate(float deltaTime) {
 	bool ctrl = keyboard::isDown(GRender::Key::LEFT_CONTROL) || keyboard::isDown(GRender::Key::RIGHT_CONTROL);
@@ -197,10 +219,11 @@ void GShader::importShader(const fs::path& shaderpath) {
 	}
 
 	shader.loadShader(shaderpath);
+	setAppTitle("GShader :: " + shaderpath.filename().string());
 }
 
 void GShader::loadConfig(const fs::path& configpath) {
-	GRender::ASSERT(fs::exists(configpath), "'" + configpath.string() + "' doesn't exist!");
+	//GRender::ASSERT(fs::exists(configpath), "'" + configpath.string() + "' doesn't exist!");
 	
 	ConfigFile config(configpath);
 	config.load();

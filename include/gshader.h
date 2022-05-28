@@ -21,7 +21,7 @@ private:
 class GShader : public Application
 {
 public:
-	GShader(void);
+	GShader(const fs::path& filepath);
 	~GShader(void) = default;
 
 	void onUserUpdate(float deltaTime) override;
@@ -48,7 +48,3 @@ private:
 
 	Ref<Framebuffer> fbuffer;
 };
-
-GRender::Application* GRender::createApplication() {
-	return new GShader;
-}
