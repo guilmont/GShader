@@ -1,10 +1,24 @@
 #include "gshader.h"
 
 GRender::Application* GRender::createApplication(int argc, char** argv) {
+	namespace fs = std::filesystem;
+
+	fs::path currDir = fs::current_path();
+	
+	// Setup program to use executable path as reference
+	std::filesystem::path exe = fs::path{ __argv[0] }.parent_path();
+	if (fs::exists(exe))
+		fs::current_path(exe);
+
 	if (argc == 1)
 		return new GShader("../examples/basic.glsl");
-	else
-		return new GShader(argv[1]);
+	else {
+		if (!fs::exists(argv[1])) {
+			return new GShader(currDir / fs::path{ argv[1] });
+		} else {
+			return new GShader(argv[1]);
+		}
+	}
 }
 
 
