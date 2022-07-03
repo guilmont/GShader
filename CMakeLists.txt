@@ -21,24 +21,30 @@ target_include_directories(Json INTERFACE "vendor/nlohmann/")
 ### Colors
 add_library(Colors STATIC "src/colors.cpp")
 target_include_directories(Colors PRIVATE "include")
-target_link_libraries(Colors PRIVATE imgui glm)
+target_link_libraries(Colors PRIVATE GRender)
+
+### Uniforms
+add_library(Uniforms STATIC "src/uniforms.cpp")
+target_include_directories(Uniforms PRIVATE "include")
+target_link_libraries(Uniforms PRIVATE GRender)
 
 ### Dynamic Shader
 add_library(DynamicShader STATIC "src/dynamicShader.cpp")
-target_include_directories(DynamicShader PUBLIC "include")
-target_link_libraries(DynamicShader PUBLIC GRender)
+target_include_directories(DynamicShader PRIVATE "include")
+target_link_libraries(DynamicShader PRIVATE GRender)
 
 ### Configuration file
 add_library(ConfigFile STATIC "src/configFile.cpp")
 target_include_directories(ConfigFile PRIVATE "include")
-target_link_libraries(ConfigFile PUBLIC Json GRender Colors)
+target_link_libraries(ConfigFile PRIVATE GRender Json Colors Uniforms)
 
 
 ### GShader ###################################################################
 project(GShader)
 
 add_executable(GShader "src/gshader.cpp")
-target_link_libraries(GShader PRIVATE Colors DynamicShader ConfigFile)
+target_include_directories(GShader PRIVATE "include")
+target_link_libraries(GShader PRIVATE GRender Colors Uniforms DynamicShader ConfigFile Json)
 
 
 if (WIN32)

@@ -27,10 +27,15 @@ public:
 
     bool wasUpdated(); // if any file was touched since opened
 
-    void setInteger(const char*, int);
-    void setFloat(const char*, float);
-    void setVec2f(const char*, const float*);
-    void setVec3f(const char*, const float*);
+    void setInteger(const char*, int) const;
+    void setVec2i(const char*, const int32_t*) const;
+    void setVec3i(const char*, const int32_t*) const;
+    void setVec4i(const char*, const int32_t*) const;
+
+    void setFloat(const char*, float) const;
+    void setVec2f(const char*, const float*) const;
+    void setVec3f(const char*, const float*) const;
+    void setVec4f(const char*, const float*) const;
 
 
 private:

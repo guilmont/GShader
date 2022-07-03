@@ -3,9 +3,6 @@
 #include <filesystem>
 
 #include "json.hpp"
-#include "colors.h"
-#include "camera.h"
-#include "mailbox.h"
 
 // Saving data: 1) Create configFile; 2) insert data; 3) save()
 // Loading data: 1) Create configFile; 2) load(); 3) get data;

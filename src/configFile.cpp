@@ -1,4 +1,9 @@
 #include "configFile.h"
+#include "mailbox.h"
+
+#include "colors.h"
+#include "camera.h"
+#include "uniforms.h"
 
 #include <fstream>
 
@@ -112,4 +117,146 @@ GRender::Camera ConfigFile::get() {
     return cam;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
+// Uniforms
 
+template<>
+void ConfigFile::insert(const uniform::Uniform& unif) {
+    using namespace uniform;
+    
+    json& vec = data["uniforms"];
+    for (const auto& [tag, data] : unif) {
+        json& var = vec[tag.substr(2)];
+        var["type"] = static_cast<int32_t>(data->tp);
+
+        switch (data->tp) {
+        case Type::INT: {
+            const DataInt* ptr = reinterpret_cast<const DataInt*>(data.get());
+            var["range"] = { ptr->range.x, ptr->range.y };
+            var["data"] = ptr->data.x;
+            break;
+        }
+        case Type::IVEC2: {
+            const DataInt2* ptr = reinterpret_cast<const DataInt2*>(data.get());
+            var["range"] = { ptr->range.x, ptr->range.y };
+            var["data"] = { ptr->data.x, ptr->data.y };
+            break;
+        }
+        case Type::IVEC3: {
+            const DataInt3* ptr = reinterpret_cast<const DataInt3*>(data.get());
+            var["range"] = { ptr->range.x, ptr->range.y };
+            var["data"] = { ptr->data.x, ptr->data.y, ptr->data.z };
+            break;
+        }
+        case Type::IVEC4: {
+            const DataInt4* ptr = reinterpret_cast<const DataInt4*>(data.get());
+            var["range"] = { ptr->range.x, ptr->range.y };
+            var["data"] = { ptr->data.x, ptr->data.y, ptr->data.z, ptr->data.w };
+            break;
+        }
+        case Type::FLOAT: {
+            const DataFloat* ptr = reinterpret_cast<const DataFloat*>(data.get());
+            var["range"] = { ptr->range.x, ptr->range.y };
+            var["data"] = ptr->data.x;
+            break;
+        }
+        case Type::VEC2: {
+            const DataFloat2* ptr = reinterpret_cast<const DataFloat2*>(data.get());
+            var["range"] = { ptr->range.x, ptr->range.y };
+            var["data"] = { ptr->data.x, ptr->data.y };
+            break;
+        }
+        case Type::VEC3: {
+            const DataFloat3* ptr = reinterpret_cast<const DataFloat3*>(data.get());
+            var["range"] = { ptr->range.x, ptr->range.y };
+            var["data"] = { ptr->data.x, ptr->data.y, ptr->data.z };
+            break;
+        }
+        default: {
+            const DataFloat4* ptr = reinterpret_cast<const DataFloat4*>(data.get());
+            var["range"] = { ptr->range.x, ptr->range.y };
+            var["data"] = { ptr->data.x, ptr->data.y, ptr->data.z, ptr->data.w };
+            break;
+        }
+        } // switch
+    }
+}
+
+template<>
+uniform::Uniform ConfigFile::get() {
+    using namespace uniform;
+
+    json& aux = data["uniforms"];
+    if (aux.is_null()) {
+        return Uniform();
+    }
+  
+    Uniform unif;
+    for (const auto& [name, var] : aux.items()) {
+        // Type and tag
+        const std::string tag = "##" + name;
+        Type tp = static_cast<Type>(var["type"].get<int32_t>());
+
+        ///////////////////////////////
+        // Getting range data
+        glm::ivec2 irg;
+        glm::vec2 frg;
+        json& range = var["range"];
+        if (tp >= Type::INT && tp <= Type::IVEC4) {
+            irg = { range[0].get<int32_t>(), range[1].get<int32_t>() };
+        }
+        else {
+            frg = { range[0].get<float>(), range[1].get<float>() };
+        }
+
+        /////////////////////////////
+        //Getting values
+        json& val = var["data"];
+        switch (tp) {
+        case Type::INT: {
+            glm::ivec1 ptr(val.get<int32_t>());
+            unif.append(tag, new DataInt(tag, tp, irg, ptr));
+            break;
+        }
+        case Type::IVEC2: {
+            glm::ivec2 ptr = { val[0].get<int32_t>(), val[1].get<int32_t>() };
+            unif.append(tag, new DataInt2(tag, tp, irg, ptr));
+            break;
+        }
+        case Type::IVEC3: {
+            glm::ivec3 ptr = { val[0].get<int32_t>(), val[1].get<int32_t>(), val[2].get<int32_t>() };
+            unif.append(tag, new DataInt3(tag, tp, irg, ptr));
+            break;
+        }
+        case Type::IVEC4: {
+            glm::ivec4 ptr = { val[0].get<int32_t>(), val[1].get<int32_t>(),
+                               val[2].get<int32_t>(), val[3].get<int32_t>() };
+            unif.append(tag, new DataInt4(tag, tp, irg, ptr));
+            break;
+        }
+        case Type::FLOAT: {
+            glm::vec1 ptr(val.get<float>());
+            unif.append(tag, new DataFloat(tag, tp, frg, ptr));
+            break;
+        }
+        case Type::VEC2: {
+            glm::vec2 ptr = { val[0].get<float>(), val[1].get<float>() };
+            unif.append(tag, new DataFloat2(tag, tp, frg, ptr));
+            break;
+        }
+        case Type::VEC3: {
+            glm::vec3 ptr = { val[0].get<float>(), val[1].get<float>(), val[2].get<float>() };
+            unif.append(tag, new DataFloat3(tag, tp, frg, ptr));
+            break;
+        }
+        default: {
+            glm::vec4 ptr = { val[0].get<float>(), val[1].get<float>(),
+                               val[2].get<float>(), val[3].get<float>() };
+            unif.append(tag, new DataFloat4(tag, tp, frg, ptr));
+            break;
+        }
+        } // switch
+    }   
+    
+    return unif;
+}

@@ -1,8 +1,11 @@
 #pragma once
 
+#include "dynamicShader.h"
+
 #include <map>
 #include <string>
 #include <glm/glm.hpp>
+
 
 class Colors {
 public:
@@ -13,6 +16,7 @@ public:
 
 	void addColor();
 	void showColors();
+	void submit(const DynamicShader& shader);
 
 	void open();
 	void close();

@@ -1,6 +1,7 @@
 #include "GRender.h"
 #include "dynamicShader.h"
 #include "colors.h"
+#include "uniforms.h"
 
 #include "configFile.h"
 
@@ -18,8 +19,11 @@ private:
 	TP var;
 };
 
-class GShader : public Application
-{
+class GShader : public Application {
+	using Uniform = uniform::Uniform;
+	using QuadSpecs = quad::Specs;
+	using Quad = quad::Quad;
+
 public:
 	GShader(const fs::path& filepath);
 	~GShader(void) = default;
@@ -39,9 +43,10 @@ private:
 
 	bool view_specs = false;
 
-	quad::Specs specs;
-	quad::Quad quad;
+	Quad quad;
+	QuadSpecs specs;
 
+	Uniform uniforms;
 	Colors colors;
 	Camera camera;
 	DynamicShader shader;

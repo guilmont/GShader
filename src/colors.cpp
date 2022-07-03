@@ -1,10 +1,11 @@
 #include "colors.h"
 
 #include "imgui.h"
+#include "mailbox.h"
 
 
 void Colors::append(const std::string& name, const glm::vec3& color) {
-	mColors["##" + name] = color;
+	mColors.emplace("##" + name, color);
 }
 
 void Colors::addColor() {
@@ -34,8 +35,13 @@ void Colors::addColor() {
 	if (ImGui::Button("Add") || enter) {
 		std::string name(newColorName);
 		if (!name.empty()) {
-			append(newColorName, newColor);
-			reset();
+			if (mColors.find("##" + name) != mColors.end()) {
+				GRender::mailbox::CreateWarn("'" + name + "' already exists!");
+			}
+			else {
+				append(name, newColor);
+				reset();
+			}
 		}
 	}
 	ImGui::SameLine();
@@ -104,6 +110,13 @@ void Colors::showColors() {
 	// In case we need to add new colors
 	if (addOn) {
 		addColor();
+	}
+}
+
+void Colors::submit(const DynamicShader& shader) {
+	// submitting colors to shader
+	for (const auto& [name, cor] : mColors) {
+		shader.setVec3f(name.c_str() + 2, &cor[0]);
 	}
 }
 

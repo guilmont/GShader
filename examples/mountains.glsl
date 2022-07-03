@@ -7,6 +7,8 @@ uniform vec3 cGround;
 uniform vec3 cCloud;
 uniform vec3 cLake;
 uniform vec3 vAng;
+uniform float theta; // up-down
+uniform float phi; // around
 
 #define GROUND 1
 #define LAKE 2
@@ -52,9 +54,6 @@ void main() {
     vec3 normal = GetNormal(pos);
 
     // diffusive light
-    float theta = 0.5 * 3.1415 * (1.0 - vAng.y);  // up-down
-    float phi = 2.0 * 3.1415 * vAng.x;  // around
-
     vec3 lightDir = vec3(sin(theta) * sin(phi), cos(theta), sin(theta) * cos(phi));
     float dif = max(0.0, dot(normal, lightDir));
 

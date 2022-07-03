@@ -75,24 +75,48 @@ bool DynamicShader::wasUpdated() {
     return false;
 }
 
-void DynamicShader::setInteger(const char* name, int val) {
+/////////////////////////////
+
+void DynamicShader::setInteger(const char* name, int val) const {
     int32_t loc = glGetUniformLocation(programID, name);
     glUniform1i(loc, val);
 }
 
-void DynamicShader::setFloat(const char* name, float val) {
+void DynamicShader::setVec2i(const char* name, const int32_t* v) const {
+    int32_t loc = glGetUniformLocation(programID, name);
+    glUniform2i(loc, v[0], v[1]);
+}
+
+void DynamicShader::setVec3i(const char* name, const int32_t* v) const {
+    int32_t loc = glGetUniformLocation(programID, name);
+    glUniform3i(loc, v[0], v[1], v[2]);
+}
+
+void DynamicShader::setVec4i(const char* name, const int32_t* v) const {
+    int32_t loc = glGetUniformLocation(programID, name);
+    glUniform4i(loc, v[0], v[1], v[2], v[3]);
+}
+
+/////////////////////////////
+
+void DynamicShader::setFloat(const char* name, float val) const {
     int32_t loc = glGetUniformLocation(programID, name);
     glUniform1f(loc, val);
 }
 
-void DynamicShader::setVec2f(const char* name, const float* v) {
+void DynamicShader::setVec2f(const char* name, const float* v) const {
     int32_t loc = glGetUniformLocation(programID, name);
     glUniform2f(loc, v[0], v[1]);
 }
 
-void DynamicShader::setVec3f(const char* name, const float* v) {
+void DynamicShader::setVec3f(const char* name, const float* v) const {
     int32_t loc = glGetUniformLocation(programID, name);
     glUniform3f(loc, v[0], v[1], v[2]);
+}
+
+void DynamicShader::setVec4f(const char* name, const float* v) const {
+    int32_t loc = glGetUniformLocation(programID, name);
+    glUniform4f(loc, v[0], v[1], v[2], v[3]);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////

@@ -87,6 +87,9 @@ void GShader::onUserUpdate(float deltaTime) {
 	if (fbuffer.active && keyboard::isPressed('C'))
 		alt ? colors.close() : colors.open();
 
+	if (fbuffer.active && keyboard::isPressed('U'))
+		alt ? uniforms.close() : uniforms.open();
+
 	if (fbuffer.active && keyboard::isPressed('V'))
 		alt ? camera.close() : camera.open();
 
@@ -131,9 +134,9 @@ void GShader::onUserUpdate(float deltaTime) {
 	}
 	shader.setVec2f("iMouse", vec);
 
-	for (auto& [name, cor] : colors) {
-		shader.setVec3f(name.c_str() + 2, &cor[0]);
-	}
+	// Submit data to shader
+	colors.submit(shader);
+	uniforms.submit(shader);
 
 	// Drawing quad
 	quad.draw(specs);
@@ -156,6 +159,7 @@ void GShader::ImGuiLayer(void) {
 
 	// External utility to edit colors on the fly
 	colors.showColors();
+	uniforms.showUniforms();
 	camera.display();
 
 	//////////////////////////////////////////////////////////////////////////////
@@ -212,6 +216,10 @@ void GShader::ImGuiMenuLayer(void) {
 			colors.open();
 		}
 
+		if (ImGui::MenuItem("Uniforms...", "U")) {
+			uniforms.open();
+		}
+
 		if (ImGui::MenuItem("Camera...", "V")) {
 			camera.open();
 		}
@@ -248,6 +256,7 @@ void GShader::loadConfig(const fs::path& configpath) {
 
 	currentShader = shaderpath;
 	colors = config.get<Colors>();
+	uniforms = config.get<uniform::Uniform>();
 	camera = config.get<GRender::Camera>();
 
 	importShader(currentShader);
@@ -260,5 +269,6 @@ void GShader::saveConfig(const fs::path& configpath) {
     config.insert(relPath);
 	config.insert(colors);
 	config.insert(camera);
+	config.insert(uniforms);
 	config.save();
 }
