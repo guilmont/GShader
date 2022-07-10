@@ -1,5 +1,9 @@
 #include "gshader.h"
 
+#include "GRender/entryPoint.h"
+namespace mouse = mouse;
+namespace keyboard = keyboard;
+
 GRender::Application* GRender::createApplication(int argc, char** argv) {
 	namespace fs = std::filesystem;
 
@@ -48,12 +52,13 @@ GShader::GShader(const fs::path& filepath) : Application("GShader", 1200, 800, "
 
 
 void GShader::onUserUpdate(float deltaTime) {
-	bool ctrl = keyboard::isDown(GRender::Key::LEFT_CONTROL) || keyboard::isDown(GRender::Key::RIGHT_CONTROL);
-	bool alt = keyboard::isDown(GRender::Key::LEFT_ALT) || keyboard::isDown(GRender::Key::RIGHT_ALT);
+	bool ctrl = keyboard::IsDown(Key::LEFT_CONTROL) || keyboard::IsDown(Key::RIGHT_CONTROL);
+	bool alt = keyboard::IsDown(Key::LEFT_ALT) || keyboard::IsDown(Key::RIGHT_ALT);
+	bool shift = keyboard::IsDown(Key::LEFT_SHIFT) || keyboard::IsDown(Key::RIGHT_SHIFT);
 
     ///////////////////////////////////////////////////////
     // IO
-    if (ctrl && keyboard::isPressed('O')) {
+    if (ctrl && keyboard::IsPressed('O')) {
 		auto function = [](const fs::path& path, void* ptr) -> void {
 			GShader* gs = reinterpret_cast<GShader*>(ptr);
 			if (path.extension() == ".json")
@@ -64,37 +69,54 @@ void GShader::onUserUpdate(float deltaTime) {
 		dialog::OpenFile("Open shader...", { "json", "glsl" }, function, this);
 	}
 
-    if (ctrl && keyboard::isPressed('L')) {
+    if (ctrl && keyboard::IsPressed('L')) {
         auto function = [](const fs::path& path, void* ptr) -> void {
             reinterpret_cast<GShader*>(ptr)->loadConfig(path);
         };
         dialog::OpenFile("Load configurations...", {"json"}, function, this);
     }
 
-    if (ctrl && keyboard::isPressed('S')) {
+    if (ctrl && keyboard::IsPressed('S')) {
         auto function = [](const fs::path& path, void* ptr) -> void {
             reinterpret_cast<GShader*>(ptr)->saveConfig(path);
         };
         dialog::SaveFile("Save configurations...", {"json"}, function, this);
     }
 
+	///////////////////////////////////////////////////////
+	// Control
+	if (!shift && keyboard::IsPressed(Key::SPACE)) { ctrlPlay = !ctrlPlay; }
+
+	if (shift && keyboard::IsPressed(Key::SPACE)) {
+		ctrlStep = true;
+		ctrlPlay = false;
+	}
+
+	if (ctrlReset || (shift && keyboard::IsPressed('R'))) {
+		ctrlReset = false;
+
+		elapsedTime = 0.0f;
+		ctrlPlay = false;
+		ctrlStep = true;
+	}
+
     ///////////////////////////////////////////////////////
     // Property windows
 	
-    if (fbuffer.active && keyboard::isPressed('I'))
+    if (fbuffer.active && keyboard::IsPressed('I'))
 		view_specs = alt ? false : true;
 
-	if (fbuffer.active && keyboard::isPressed('C'))
+	if (fbuffer.active && keyboard::IsPressed('C'))
 		alt ? colors.close() : colors.open();
 
-	if (fbuffer.active && keyboard::isPressed('U'))
+	if (fbuffer.active && keyboard::IsPressed('U'))
 		alt ? uniforms.close() : uniforms.open();
 
-	if (fbuffer.active && keyboard::isPressed('V'))
+	if (fbuffer.active && keyboard::IsPressed('V'))
 		alt ? camera.close() : camera.open();
 
 	// Automatic controls for camera
-	if (fbuffer.active)
+	if (fbuffer.active && ctrlPlay)
 		camera.controls(deltaTime);
 
 	// Update shader if it was modified
@@ -105,7 +127,7 @@ void GShader::onUserUpdate(float deltaTime) {
 	//////////////////////////////////////////////////////////
 	// Drawing to framebuffer
 
-	if (shader.hasFailed())
+	if (shader.hasFailed() || (!ctrlPlay && !ctrlStep))
 		return;
 
 	glm::uvec2 res = fbuffer->getSize();
@@ -128,7 +150,7 @@ void GShader::onUserUpdate(float deltaTime) {
 	if (fbuffer.active) {
 		glm::uvec2 fpos = fbuffer->getPosition();
 		glm::uvec2 size = fbuffer->getSize();
-		glm::vec2 mpos = mouse::position();
+		glm::vec2 mpos = mouse::Position();
 		vec[0] = (mpos.x - fpos.x) / float(size.x);
 		vec[1] = 1.0f - (mpos.y - fpos.y) / float(size.y);
 	}
@@ -143,6 +165,9 @@ void GShader::onUserUpdate(float deltaTime) {
 	quad.submit();
 
 	fbuffer->unbind();
+
+	// Resetting step controller, so no more updates are made
+	ctrlStep = false;
 }
 
 void GShader::ImGuiLayer(void) {
@@ -162,6 +187,16 @@ void GShader::ImGuiLayer(void) {
 	uniforms.showUniforms();
 	camera.display();
 
+	{
+		// Hidden feature to help development
+		static bool view_demo = false;
+		if (keyboard::IsDown(Key::SPACE) && keyboard::IsPressed('D'))
+			view_demo = true;
+
+		if (view_demo)
+			ImGui::ShowDemoWindow(&view_demo);
+	}
+
 	//////////////////////////////////////////////////////////////////////////////
 	// Updating viewport
 	ImGui::Begin("Viewport", NULL, ImGuiWindowFlags_NoTitleBar);
@@ -172,13 +207,45 @@ void GShader::ImGuiLayer(void) {
 	ImGui::Image((void *)(uintptr_t)fbuffer->getID(), port, {0.0f, 1.0f}, {1.0f, 0.0f});
 
 	glm::uvec2 view = fbuffer->getSize();
-	glm::uvec2 uport{ uint32_t(port.x), uint32_t(port.y) };
+	glm::uvec2 uport = { port.x, port.y };
 
 	if (uport.x != view.x || uport.y != view.y) {
-		*fbuffer = GRender::Framebuffer(uport);
+		*fbuffer = Framebuffer(uport);
+		ImVec2 ps = ImGui::GetWindowPos();
+		fbuffer->setPosition(ps.x, ps.y);
 	}
 
 	ImGui::End();
+
+	// Creating a small play/reset widget visible only when buffer is hovered
+	// We cannot simply user fbuffer.active, otherwise the widget would disappear when mouse hovers this controls
+	glm::uvec2 p0 = fbuffer->getPosition();
+	glm::uvec2 pf = fbuffer->getSize() + p0;
+	p0.y = (p0.y + pf.y) / 2; // To avoid the menu bars to interfere
+
+	glm::uvec2 mpos = { mouse::Position().x, mouse::Position().y };
+	ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.8f);
+	if (mpos.x > p0.x && mpos.x < pf.x && mpos.y > p0.y && mpos.y < pf.y) {
+		ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoDecoration);
+		
+		ImVec2 size = { 160.0f, 40.0f };
+		ImVec2 loc = { 0.5f * (p0.x + pf.x - size.x), pf.y - 1.5f * size.y };
+
+		ImGui::SetWindowSize(size);
+		ImGui::SetWindowPos(loc);
+
+		if (ImGui::Button(ctrlPlay ? "Pause" : "Play", {50.0f,0.0f})) { ctrlPlay = !ctrlPlay; }
+		ImGui::SameLine();
+		if (ImGui::Button("Step")) { 
+			ctrlStep = true;
+			ctrlPlay = false;
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Reset")) { ctrlReset = true; }
+
+		ImGui::End();
+	}
+	ImGui::PopStyleVar();
 }
 
 void GShader::ImGuiMenuLayer(void) {
@@ -232,12 +299,14 @@ void GShader::importShader(const fs::path& shaderpath) {
 	mailbox::Clear();
 	mailbox::Close();
 	elapsedTime = 0.0f;
+	ctrlPlay = true;
+	ctrlStep = false;
     
 	// In case we simply saved the glsl file, we don't need to reset anything
 	if (shaderpath != currentShader) {
 		currentShader = shaderpath;
 		colors = Colors();
-		camera = GRender::Camera();
+		camera = Camera();
 	}
 
 	shader.loadShader(shaderpath);
@@ -245,7 +314,7 @@ void GShader::importShader(const fs::path& shaderpath) {
 }
 
 void GShader::loadConfig(const fs::path& configpath) {
-	//GRender::ASSERT(fs::exists(configpath), "'" + configpath.string() + "' doesn't exist!");
+	//ASSERT(fs::exists(configpath), "'" + configpath.string() + "' doesn't exist!");
 	
 	ConfigFile config(configpath);
 	config.load();
@@ -257,7 +326,7 @@ void GShader::loadConfig(const fs::path& configpath) {
 	currentShader = shaderpath;
 	colors = config.get<Colors>();
 	uniforms = config.get<uniform::Uniform>();
-	camera = config.get<GRender::Camera>();
+	camera = config.get<Camera>();
 
 	importShader(currentShader);
 }

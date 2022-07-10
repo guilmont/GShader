@@ -1,7 +1,7 @@
 #include "colors.h"
 
 #include "imgui.h"
-#include "mailbox.h"
+#include "GRender/mailbox.h"
 
 
 void Colors::append(const std::string& name, const glm::vec3& color) {

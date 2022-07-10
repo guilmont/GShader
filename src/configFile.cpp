@@ -1,8 +1,9 @@
 #include "configFile.h"
-#include "mailbox.h"
+
+#include "GRender/mailbox.h"
+#include "GRender/camera.h"
 
 #include "colors.h"
-#include "camera.h"
 #include "uniforms.h"
 
 #include <fstream>

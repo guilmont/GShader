@@ -1,6 +1,6 @@
 #include "uniforms.h"
 
-#include "mailbox.h"
+#include "GRender/mailbox.h"
 
 #include "imgui.h"
 #include "glm/glm.hpp"

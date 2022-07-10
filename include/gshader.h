@@ -1,4 +1,4 @@
-#include "GRender.h"
+#include "GRender/application.h"
 #include "dynamicShader.h"
 #include "colors.h"
 #include "uniforms.h"
@@ -42,6 +42,9 @@ private:
 	float elapsedTime = 0.0f;
 
 	bool view_specs = false;
+	bool ctrlPlay = true;
+	bool ctrlReset = false;
+	bool ctrlStep = false;
 
 	Quad quad;
 	QuadSpecs specs;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "glad/glad.h"
-#include "mailbox.h"
+#include "GRender/mailbox.h"
 
 class DynamicShader {
     struct Data {
