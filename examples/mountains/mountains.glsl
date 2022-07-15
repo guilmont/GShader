@@ -1,6 +1,6 @@
-#include "utils/rayMarcher.hl"
-#include "utils/camera.hl"
-#include "utils/noise.hl"
+#include "../utils/rayMarcher.hl"
+#include "../utils/camera.hl"
+#include "../utils/noise.hl"
 
 uniform vec3 cSky;
 uniform vec3 cGround;
@@ -84,16 +84,9 @@ void main() {
     float nearFar = smoothstep(15000.0, 15000.1, obj.dist); // To avoid far field aberrationi
     color = mix(color, skyColor, nearFar);
 
-
     // Let's add some fog to the distance
     color = mix(cSky, color, exp(-0.00002 * vec3(1.0,2.0,4.0) * pow(obj.dist, 0.87))); 
 
-
-    
     color = pow(color, vec3(0.4545)); // gamma correction
-
-
     fragColor = vec4(color, 1.0);
 }
-
-//0.5,0.682,0.869

@@ -10,7 +10,7 @@ GRender::Application* GRender::createApplication(int argc, char** argv) {
 	fs::path currDir = fs::current_path();
 	
 	// Setup program to use executable path as reference
-	std::filesystem::path exe = fs::path{ __argv[0] }.parent_path();
+	std::filesystem::path exe = fs::path{ argv[0] }.parent_path();
 	if (fs::exists(exe))
 		fs::current_path(exe);
 
@@ -199,6 +199,7 @@ void GShader::ImGuiLayer(void) {
 
 	//////////////////////////////////////////////////////////////////////////////
 	// Updating viewport
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0.0f, 0.0f });
 	ImGui::Begin("Viewport", NULL, ImGuiWindowFlags_NoTitleBar);
 	fbuffer.active = ImGui::IsWindowHovered();
 
@@ -211,11 +212,12 @@ void GShader::ImGuiLayer(void) {
 
 	if (uport.x != view.x || uport.y != view.y) {
 		*fbuffer = Framebuffer(uport);
-		ImVec2 ps = ImGui::GetWindowPos();
-		fbuffer->setPosition(ps.x, ps.y);
 	}
+	ImVec2 ps = ImGui::GetWindowPos();
+	fbuffer->setPosition(ps.x, ps.y);
 
 	ImGui::End();
+	ImGui::PopStyleVar();
 
 	// Creating a small play/reset widget visible only when buffer is hovered
 	// We cannot simply user fbuffer.active, otherwise the widget would disappear when mouse hovers this controls
