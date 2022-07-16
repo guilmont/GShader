@@ -87,6 +87,8 @@ void ConfigFile::insert(const GRender::Camera& cam) {
     aux["position"] = {pos.x, pos.y, pos.z};
     aux["pitch"] = cam.getDefaultPitch();
     aux["yaw"] = cam.getYaw();
+    aux["speed"] = cam.getSpeed();
+    aux["sensitivity"] = cam.getSensitivity();
     aux["fov"] = cam.getFOV();
 }
 
@@ -114,6 +116,13 @@ GRender::Camera ConfigFile::get() {
     cam.setYaw(yaw);
 
     cam.setFOV(aux["fov"].get<float>());
+
+    if (aux.contains("speed"))
+        cam.setSpeed(aux["speed"].get<float>());
+
+    if (aux.contains("sensitivity"))
+        cam.setSensitivity(aux["sensitivity"].get<float>());
+
 
     return cam;
 }

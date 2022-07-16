@@ -32,22 +32,19 @@ vec3 GetNormal(vec3 pos) {
     return vec3(dx-d, dy-d, dz-d)/dp;
 }
 
-Object RayMarch(vec3 pZero, vec3 dir) {
-    const int MAX_STEPS = 1000;        // maximum number of steps before stop searching
-    const float MAX_DIST = 15000.0;     // Sets maximum distance to look towards
-    const float SURF_DIST = 0.0001;   // How close to the object it must be to return
-
+Object RayMarch(vec3 pZero, vec3 dir, const int maxSteps,
+                const float maxDist, const float surfDist) {
     Object obj;
     obj.color = vec3(1.0,1.0,1.0);
     obj.dist = 0.0;
-    for (int k = 0; k < MAX_STEPS; k++) {
+    for (int k = 0; k < maxSteps; k++) {
         vec3 pos = pZero + obj.dist * dir;
         Object another = GetDist(pos);
         obj.dist += another.dist;
         obj.color = another.color;
         obj.index = another.index;
 
-        if (obj.dist > MAX_DIST || another.dist < SURF_DIST) {
+        if (obj.dist > maxDist || another.dist < surfDist) {
             break;
         }
     }

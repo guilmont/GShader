@@ -129,26 +129,32 @@ void main() {
     rayDir.y = sin(pitch);
     rayDir.z = sin(yaw)*cos(pitch);
 
-    Object obj = RayMarch(rayOrg, rayDir);
+    // Ray marcher properties
+    const int MAX_STEPS = 100;
+    const float MAX_DIST = 150.0;
+    const float SURF_DIST = 0.001;
+
+    Object obj = RayMarch(rayOrg, rayDir, MAX_STEPS, MAX_DIST, SURF_DIST);
     vec3 pos = rayOrg + obj.dist * rayDir;
-    vec3 normal = GetNormal(pos);
 
-    // diffusive light
-    vec3 lightPos = vec3(sin(iTime), 5.0, cos(iTime));
+    vec3 color = cBackground;
+    if (obj.dist < MAX_DIST) {
+        // diffusive light
+        vec3 normal = GetNormal(pos);
+        vec3 lightPos = vec3(sin(iTime), 13.0, cos(iTime));
 
-    vec3 vLight = lightPos - pos;
-    vec3 lightDir = normalize(vLight);
-    float lightDist = length(vLight);
-    float dif = max(0.0, dot(normal, lightDir));
+        vec3 vLight = lightPos - pos;
+        vec3 lightDir = normalize(vLight);
+        float lightDist = length(vLight);
+        float dif = max(0.0, dot(normal, lightDir));
 
-    //shadowa
-    float dist2Light = RayMarch(pos + 0.01 * normal, lightDir).dist;
-    if (dist2Light < lightDist)
-        dif *= pow(dist2Light / lightDist, 0.75);
+        //shadow
+        float dist2Light = RayMarch(pos + 0.01 * normal, lightDir, MAX_STEPS, MAX_DIST, SURF_DIST).dist;
+        if (dist2Light < lightDist)
+            dif *= pow(dist2Light / lightDist, 0.75);
 
-    float nearFar = smoothstep(100.0, 110.1, obj.dist); // To avoid far field aberration
-    vec3 color = mix(obj.color * dif, cBackground, nearFar);
-
+        color = obj.color * dif;
+    }
     color = pow(color, vec3(0.4545)); // gamma correction
 
     fragColor = vec4(color,1.0);

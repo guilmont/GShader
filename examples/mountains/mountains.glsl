@@ -49,7 +49,12 @@ void main() {
     rayDir.y = sin(pitch);
     rayDir.z = sin(yaw)*cos(pitch);
 
-    Object obj = RayMarch(rayOrg, rayDir);
+    // Ray marcher properties
+    const int MAX_STEPS = 100;
+    const float MAX_DIST = 15000.0;
+    const float SURF_DIST = 0.1;
+
+    Object obj = RayMarch(rayOrg, rayDir, MAX_STEPS, MAX_DIST, SURF_DIST);
     vec3 pos = rayOrg + obj.dist * rayDir;
     vec3 normal = GetNormal(pos);
 
@@ -58,7 +63,7 @@ void main() {
     float dif = max(0.0, dot(normal, lightDir));
 
     //shadow
-    float dist2Light = RayMarch(pos + 3.0*normal, lightDir).dist;
+    float dist2Light = RayMarch(pos + 3.0*normal, lightDir, MAX_STEPS, MAX_DIST, SURF_DIST).dist;
     if (dist2Light < 500.0)
         dif *= 0.05;
 
@@ -70,7 +75,7 @@ void main() {
 
     if (obj.index == LAKE) {
         vec3 refDir = reflect(rayDir, normal);
-        Object hi = RayMarch(pos + 5.0 * normal, refDir);
+        Object hi = RayMarch(pos + 5.0 * normal, refDir, MAX_STEPS, MAX_DIST, SURF_DIST);
         pos +=  hi.dist * refDir;
         normal = GetNormal(pos);
         float var = dif + max(0.0, dot(normal, lightDir));
